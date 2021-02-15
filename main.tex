@@ -1,7 +1,9 @@
 % \documentclass[12pt,twoside]{report}
 \documentclass[12pt]{report}
 
-\usepackage[online]{suthesis-2e}
+\usepackage[online]{suthesis}
+\usepackage{graphicx}
+\graphicspath{ {./figures/} }
 
 \title{Deep Learning for Medical Image and Signal Understanding}
 \author{Brett Kuprel}
@@ -17,7 +19,8 @@
 \include{acknowledge}
 \afterpreface
 \include{dermatology}
-\include{critical-care}
+\include{critical_care}
+\include{conclusion}
 \setstretch{1.3}
 \bibliography{references}
 % \bibliographystyle{plain}

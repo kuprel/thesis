@@ -1,0 +1,5 @@
+derm_sens_spec a, b
+Extended Data Table 1
+Extended Data Table 2d
+Extended Data Algorithm 1
+Extended Data Figure 4
