@@ -14,6 +14,38 @@ Deep learning algorithms, powered by advances in computation and extremely large
 A GoogleNet Inception-v3 CNN architecture \cite{szegedy2016rethinking} is pretrained on ~1.28 million images (1,000 object categories) from the 2014 ImageNet Large Scale Visual Recognition Challenge \cite{russakovsky2015imagenet}, and train it on the collected dermatology dataset using transfer learning \cite{pan2009survey}. Figure \ref{fig:derm_cnn} demonstrates the working system. The CNN is trained on general lesion classification using 757 disease classes. The created dataset is composed of dermatologist-labeled images organized in a novel tree-structured taxonomy of 2,032 diseases, where the individual diseases form the leaf nodes. The images come from 18 different clinician-curated, open-access online repositories as well as clinical data from the Stanford Hospital. Figure \ref{fig:derm_taxonomy}(a) shows a subset of the full taxonomy, which has been organized clinically and visually by medical experts. The dataset is split into 127,463 training/validation images, and 1,942 biopsy-labeled test images.
 
 \begin{figure}
+\includegraphics[width=\textwidth]{derm_benign_malignant}
+\caption{Benign vs Malignant}
+\vspace{12px}
+Insert caption here
+\label{fig:derm_benign_malignant}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{derm_scrape}
+\caption{Data Collection}
+\vspace{12px}
+Insert caption here
+\label{fig:derm_scrape}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{derm_data_problems}
+\caption{Data Problems}
+\vspace{12px}
+Insert caption here
+\label{fig:derm_data_problems}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{derm_nature}
+\caption{Nature Publication}
+\vspace{12px}
+Insert caption here
+\label{fig:derm_nature}
+\end{figure}
+
+\begin{figure}
 \includegraphics[width=\textwidth]{derm_cnn}
 \caption{Model architecture}
 \vspace{12px}
