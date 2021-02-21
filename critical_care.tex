@@ -1,10 +1,18 @@
 \chapter{Critical Care}
 
 \begin{figure}
-\includegraphics[width=\textwidth]{icu_example_waveforms}
-\caption{Example waveforms}
+\includegraphics[width=0.8\textwidth]{icu_icd_mi}
+\caption{ICD Codes}
 \vspace{12px}
-Insert caption here
+The International Classification of Diseases (ICD) is a taxonomy of all medical conditions maintained by the World Health Organization.  "Acute myocardial infarction", for example, is a descendant of "Acute ischemic heart diseases", which itself is a descendant of "Ischemic heart diseases", which itself is a descendant of "Diseases of the circulatory system".  "Acute myocardial infarction" is then further subdivided if more granularity is required.
+\label{fig:icu_icd_mi}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{icu_example_inputs}
+\caption{Example inputs}
+\vspace{12px}
+Waveforms are sampled at 125Hz with 8 bit resolution.  An example contains 2048 samples, or about 16 seconds.  Waveform types include 3 ECG leads (II, V, AVR) shown in blue, respiration shown in in green, and photoplethysmogram and arterial blood pressure, both shown in red.  An example is labeled with a set of ICD codes.  For simplicity, examples here are shown that were correctly detected as having a given condition.  In the upper left we see an example that was correctly flagged for cardiogenic shock.  The the upper right we have an example of a detected cerebral aneurysm.  In the lower left and right we have examples of myocardial infarction and liver cirrhosis.
 \label{fig:icu_example_waveforms}
 \end{figure}
 
@@ -12,7 +20,7 @@ Insert caption here
 \includegraphics[width=\textwidth]{icu_model_arch}
 \caption{Model architecture}
 \vspace{12px}
-Insert caption here
+A 32 layer 1D ConvNet with residual layers was trained on inputs of $k$ by 2048.  During training time, $k = 15$, and during inference time $k = 6$.  The discrepancy in $k$ is due to the fact that not all waveforms are present for every patient.  The patients in the validation and test sets are restricted to those who have all 6 of the required waveforms measured.  During training, missing waveforms are input as 0 vectors.  The net outputs 90 probabilities, 1 for each of the 90 ICD codes trained on.  Each example can have multiple diagnoses associated with it.  The loss is the mean of all 90 binary cross entropies.
 \label{fig:icu_model_arch}
 \end{figure}
 
@@ -20,7 +28,7 @@ Insert caption here
 \includegraphics[width=\textwidth]{icu_cardio_prob}
 \caption{Cardiogenic Shock Separation}
 \vspace{12px}
-Insert caption here
+Conditional distributions of network output given the diagnosis is positive or negative for cardiogenic shock.
 \label{fig:icu_cardio_prob}
 \end{figure}
 
@@ -28,7 +36,7 @@ Insert caption here
 \includegraphics[width=\textwidth]{icu_cardio_sens}
 \caption{Cardiogenic Shock Effective Sensitivity}
 \vspace{12px}
-Insert caption here
+Effective sensitivity of the network for detecting a cardiogenic shock.  As an example, assume only 20\% of the patients can be tested with an expensive but perfect test. Using the net to flag the 20 percentile patients at highest risk for further testing would detect 66\% of the cases.
 \label{fig:icu_cardio_sens}
 \end{figure}
 
@@ -36,7 +44,7 @@ Insert caption here
 \includegraphics[width=\textwidth]{icu_systolic_prob}
 \caption{Systolic Heart Failure Separation}
 \vspace{12px}
-Insert caption here
+Conditional distributions of network output given the diagnosis is positive or negative for systolic heart failure.
 \label{fig:icu_systolic_prob}
 \end{figure}
 
@@ -44,7 +52,7 @@ Insert caption here
 \includegraphics[width=\textwidth]{icu_systolic_sens}
 \caption{Systolic Heart Failure Effective Sensitivity}
 \vspace{12px}
-Insert caption here
+Effective sensitivity of the network for detecting systolic heart failure.  As an example, assume only 20\% of the patients can be tested with an expensive but perfect test. Using the net to flag the 20 percentile patients at highest risk for further testing would detect 56\% of the cases.
 \label{fig:icu_systolic_sens}
 \end{figure}
 
@@ -52,7 +60,7 @@ Insert caption here
 \includegraphics[width=\textwidth]{icu_cerebral_prob}
 \caption{Cerebral Aneurysm Separation}
 \vspace{12px}
-Insert caption here
+Conditional distributions of network output given the diagnosis is positive or negative for cerebral aneurysm.
 \label{fig:icu_cerebral_prob}
 \end{figure}
 
@@ -60,7 +68,7 @@ Insert caption here
 \includegraphics[width=\textwidth]{icu_cerebral_sens}
 \caption{Cerebral Aneurysm Effective Sensitivity}
 \vspace{12px}
-Insert caption here
+Effective sensitivity of the network for detecting a cerebral aneurysm.  As an example, assume only 20\% of the patients can be tested with an expensive but perfect test. Using the net to flag the 20 percentile patients at highest risk for further testing would detect 63\% of the cases.
 \label{fig:icu_cerebral_sens}
 \end{figure}
 
@@ -68,7 +76,7 @@ Insert caption here
 \includegraphics[width=\textwidth]{icu_myocard_prob}
 \caption{Myocardial Infarction Separation}
 \vspace{12px}
-Insert caption here
+Conditional distributions of network output given the diagnosis is positive or negative for myocardial infarction.
 \label{fig:icu_myocard_prob}
 \end{figure}
 
@@ -76,7 +84,7 @@ Insert caption here
 \includegraphics[width=\textwidth]{icu_myocard_sens}
 \caption{Myocardial Infarction Effective Sensitivity}
 \vspace{12px}
-Insert caption here
+Effective sensitivity of the network for detecting a myocardial infarction.  As an example, assume only 20\% of the patients can be tested with an expensive but perfect test. Using the net to flag the 20 percentile patients at highest risk for further testing would detect 57\% of the cases.
 \label{fig:icu_myocard_sens}
 \end{figure}
 
@@ -84,7 +92,7 @@ Insert caption here
 \includegraphics[width=\textwidth]{icu_relative_risk}
 \caption{Relative risk}
 \vspace{12px}
-Insert caption here
+Patients are placed into estimated risk categories of powers of 2.  For example, a patient in the 1/4 risk category of systolic heart failure is estimated to be between 1/4 and 1/8 as likely to be diagnosed with systolic heart failure.  For cardiogenic shock, about half of the patients can be placed into a low risk category.
 \label{fig:icu_relative_risk}
 \end{figure}
 
@@ -92,31 +100,31 @@ Insert caption here
 \includegraphics[width=\textwidth]{icu_actual_risk}
 \caption{Actual risk}
 \vspace{12px}
-Insert caption here
+Risk categories are valid.  For each risk category an actual risk can be computed with error bars.  The error bars represent the fact that there are 90 conditions being predicted.  Ideally the low risk categories should have an actual risk lower than the estimated risk and the high risk categories should have a risk higher than the estimated risk.  This is due to the fact that risk categories represent an estimated risk $r$ in the range $2^n < r < 2^{n+1}$ for $n > 0$ (high risk) and $2^n > r > 2^{n+1}$ for $n < 0$ (low risk).  This indeed occurs as shown.
 \label{fig:icu_actual_risk}
 \end{figure}
 
 \begin{figure}
-\includegraphics[width=\textwidth]{icu_sem_inf}
-\caption{Semantic Inference}
+\includegraphics[width=\textwidth]{icu_embedding_method}
+\caption{ICD Embedding Method}
 \vspace{12px}
-Insert caption here
-\label{fig:icu_sem_inf}
+To compute an embedding of ICD codes from what the net has learned, 43,557 examples are forward passed through the net producing a 43,557 by 90 matrix.  The 90 rows of this matrix represent 43,557 dimensional embeddings of the ICD codes.
+\label{fig:icu_embedding_method}
 \end{figure}
 
 \begin{figure}
-\includegraphics[width=\textwidth]{icu_map}
-\caption{Semantic Inference Embedding}
+\includegraphics[width=\textwidth]{icu_icd_map}
+\caption{2D Projection of ICD Embedding}
 \vspace{12px}
-Insert caption here
-\label{fig:icu_map}
+TSNE was applied to high dimensional ICD code embeddings to produce a 2D visualization of the ICD code space learned by the net.  Conditions affecting various organs are close together in this space.  Red circles are conditions that affect the heart.  These conditions include cardiogenic shock, coronary atherosclerosis, atrial flutter, systolic heart failure, and myocardial infarction.  Green circles are conditions that affect the brain.  These conditions include cerebral edema, brain cancer, cerebral aneurysm, intracerebral hemorrhage.  It is interesting that skull fracture found its way into this region.  Yellow circles are conditions that affect the liver.  These conditions include cirrhosis, hepatitis, and liver cancer.  It is interesting that alcohol abuse and alcohol dependence syndrome found their way into this region, and are also close to the brain conditions.  Blue circles are conditions that affect the lungs.  These conditions include pulmonary collapse, pneumonia, and acute respiratory failure.  This embedding also puts similar ICD codes together that may be far apart in the ICD taxonomy.  For example consider ICD code 785.52: Septic Shock, ICD code 995.92: Severe Sepsis, and ICD code 038: Septicemia.  The nearest common ancestor of these ICD codes in the taxonomy is the root of the entire taxonomy of all medical conditions that exist.  But the net learned that they were similar semantically based on the waveforms it was trained with.
+\label{fig:icu_icd_map}
 \end{figure}
 
 \begin{figure}
 \includegraphics[width=\textwidth]{icu_map_mi}
 \caption{Semantic Inference Myocardial Infarction}
 \vspace{12px}
-Insert caption here
+This patient was admitted for "ST Elevated Myocardial Infarction".  The neural net correctly predicted that they had low risk of kidney conditions, death, and many heart conditions (colored green).  It predicted high risk of liver conditions and various heart conditions including myocardial infarction and coronary atherosclerosis (colored red).  The patients was eventually in fact diagnosed with myocardial infarction and coronary atherosclerosis among other things (circled in black).
 \label{fig:icu_map_mi}
 \end{figure}
 
@@ -124,7 +132,7 @@ Insert caption here
 \includegraphics[width=\textwidth]{icu_map_chf}
 \caption{Semantic Inference Congestive Heart Failure}
 \vspace{12px}
-Insert caption here
+This patient was admitted for "Congestive Heart Failure".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart, and died (circled in black).
 \label{fig:icu_map_chf}
 \end{figure}
 
@@ -132,7 +140,7 @@ Insert caption here
 \includegraphics[width=\textwidth]{icu_map_cardarr}
 \caption{Semantic Inference Cardiac Arrest}
 \vspace{12px}
-Insert caption here
+This patient was admitted for "Cardiac Arrest".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart among other things (circled in black).
 \label{fig:icu_map_cardarr}
 \end{figure}
 
@@ -140,7 +148,7 @@ Insert caption here
 \includegraphics[width=\textwidth]{icu_map_pacer}
 \caption{Semantic Inference Pacer Erosion}
 \vspace{12px}
-Insert caption here
+This patient was admitted for "Pacer Erosion".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart (circled in black).
 \label{fig:icu_map_pacer}
 \end{figure}
 
@@ -148,7 +156,7 @@ Insert caption here
 \includegraphics[width=\textwidth]{icu_map_stseg}
 \caption{Semantic Inference ST Elevation}
 \vspace{12px}
-Insert caption here
+This patient was admitted for "St-Segment Elevation Myocardial Infarction/Cardiac Cath".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart (circled in black).
 \label{fig:icu_map_stseg}
 \end{figure}
 
@@ -156,7 +164,7 @@ Insert caption here
 \includegraphics[width=\textwidth]{icu_map_ventach}
 \caption{Semantic Inference Ventricular Tachycardia}
 \vspace{12px}
-Insert caption here
+This patient was admitted for ventricular tachycardia.  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart (circled in black).
 \label{fig:icu_map_ventach}
 \end{figure}
 
@@ -164,7 +172,7 @@ Insert caption here
 \includegraphics[width=\textwidth]{icu_map_brain}
 \caption{Semantic Inference Intracranial Hemorrhage}
 \vspace{12px}
-Insert caption here
+This patient was admitted for "Intracranial Hemorrhage".  The neural net predicted that they had low risk of heart conditions and septic conditions (colored green).  It predicted high risk of brain conditions (colored red).  The patients was eventually diagnosed with cerebral edema and intracerebral hemorrhage (circled in black).
 \label{fig:icu_map_brain}
 \end{figure}
 
@@ -172,20 +180,20 @@ Insert caption here
 \includegraphics[width=\textwidth]{icu_map_liver}
 \caption{Semantic Inference Abdominal Pain}
 \vspace{12px}
-Insert caption here
+This patient was admitted for "Abdominal Pain".  The neural net predicted that they had low risk of brain and heart conditions (colored green).  It predicted high risk of liver conditions (colored red).  The patients was eventually diagnosed with chronic liver cirrhosis and a liver abscess among other things (circled in black).
 \label{fig:icu_map_liver}
 \end{figure}
 
 \section{Introduction}
 Admission to the intensive care unit (ICU) in hospitals is associated with risk of acute mortality given critical illness for those patients, which can include shock and end organ damage. During this period, patients are closely monitored in the intensive care setting with both invasive and noninvasive sensor data and frequent lab monitoring in order to effectively determine and prevent complications of critical illness.  Physicians often use risk scores designed to identify and predict patients’ risk of conditions such as shock: general physiologic scoring like shock index, or more specifically septic shock (qSOFA score) or cardiogenic shock (completing Fick’s formula for cardiac index, cardiac output, and stroke volume).
 
-Wearable devices are becoming more and more common.  Over 100 million people wear an Apple Watch.  This device is capable of measuring both a photoplethysmogram (PPG) and an electrocardiogram (ECG).  While data for this device is not yet openly available in large quantities, there are large amounts of data available for patients in critical care.  These datasets include waveforms measured in the ICU, which include the waveforms measured by an Apple Watch.  This distribution of patients in an ICU vs the average Apple Watch user are admittedly different.  As demonstrated in chapter 1 though, a lot can be gained from first training on a large related dataset (e.g. cats and dogs) and then fine-tuning on the dataset of interest (e.g. skin lesions).  For this situation, we use the MIMIC ICU dataset in a similar manner as ImageNet.  A further study could fine-tune this model on data collected from Apple Watch users.
+Wearable devices are becoming more common.  Over 100 million people wear an Apple Watch.  This device is capable of measuring both a photoplethysmogram (PPG) and an electrocardiogram (ECG).  While data for this device is not yet openly available in large quantities, there are large amounts of data available for patients in critical care.  These datasets include waveforms measured in the ICU, which include the waveforms measured by an Apple Watch.  This distribution of patients in an ICU vs the average Apple Watch user are admittedly different.  As demonstrated in chapter 1 though, a lot can be gained from first training on a large related dataset (e.g. cats and dogs) and then fine-tuning on the dataset of interest (e.g. skin lesions).  For this situation, we use the MIMIC ICU dataset in a similar manner as ImageNet.  A further study could fine-tune this model on data collected from Apple Watch users.
 
 \section{Dataset}
-The dataset used was collected by MIT.  It is essentially a data dump of data collected from the hospital, far from the pristine labeled ImageNet dataset.  Much care was needed to transform it into a form that a neural net could be trained with.  The dataset includes over 60 thousand ICU patients.  For each hospital admission a variable number of waveforms are recorded.  Additionally each patient was diagnosed with a variable number of conditions as evidenced by the ICD codes on their chart.
+The dataset used was collected by MIT.  It represents a data dump of data collected from the hospital over a time period of 10 years, far from the pristine labeled ImageNet dataset.  Much care was needed to transform it into a form that a neural net could be trained with.  The dataset includes over 60 thousand ICU patients.  For each hospital admission a variable number of waveforms are recorded.  Additionally each patient was diagnosed with a variable number of conditions as evidenced by the ICD codes on their chart.
 
 \subsection{ICD Codes}
-TODO
+The International Classification of Diseases (ICD) is a taxonomy of all medical conditions.  These conditions include diseases such as brain cancer
 
 \subsection{Inputs}
 TODO

@@ -1,14 +1,17 @@
 Critical Care
-make figures in white
-put figures into thesis
-caption figures
 
+captions
+text
+references
+mix figures in with text
+keep effective sensitivity and separation figures together, maybe one giant figure?
 
 Dermatology
 
-missing captions
+captions
 derm_sens_spec a, b
 Extended Data Table 1
 Extended Data Table 2d
 Extended Data Algorithm 1
 Extended Data Figure 4
+mix figures in with text
