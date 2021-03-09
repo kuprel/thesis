@@ -28,83 +28,48 @@
     \end{figure}
 }
 
-\def \figIcuCardioProb {
+\def \figIcuCardio {
     \begin{figure}
     \includegraphics[width=\textwidth]{icu_cardio_prob}
-    \caption{Cardiogenic Shock Separation}
-    \vspace{12px}
-    Conditional distributions of network output given the diagnosis is positive or negative for cardiogenic shock.
-    \label{fig:icu_cardio_prob}
-    \end{figure}
-}
-
-\def \figIcuCardioSens {
-    \begin{figure}
     \includegraphics[width=\textwidth]{icu_cardio_sens}
-    \caption{Cardiogenic Shock Effective Sensitivity}
+    \caption{Cardiogenic Shock Results}
     \vspace{12px}
-    Effective sensitivity of the network for detecting a cardiogenic shock.  As an example, assume only 20\% of the patients can be tested with an expensive but perfect test. Using the net to flag the 20 percentile patients at highest risk for further testing would detect 66\% of the cases.
-    \label{fig:icu_cardio_sens}
+    (a) Conditional distributions of network output given the diagnosis is positive or negative for cardiogenic shock. (b) Effective sensitivity of the network for detecting a cardiogenic shock.  As an example, assume only 20\% of the patients can be tested with an expensive but perfect test. Using the net to flag the 20 percentile patients at highest risk for further testing would detect 66\% of the cases.
+    \label{fig:icu_cardio}
     \end{figure}
 }
 
-\def \figIcuSystolicProb {
+\def \figIcuSystolic {
     \begin{figure}
     \includegraphics[width=\textwidth]{icu_systolic_prob}
-    \caption{Systolic Heart Failure Separation}
-    \vspace{12px}
-    Conditional distributions of network output given the diagnosis is positive or negative for systolic heart failure.
-    \label{fig:icu_systolic_prob}
-    \end{figure}
-}
-
-\def \figIcuSystolicSens {
-    \begin{figure}
     \includegraphics[width=\textwidth]{icu_systolic_sens}
-    \caption{Systolic Heart Failure Effective Sensitivity}
+    \caption{Systolic Heart Failure Results}
     \vspace{12px}
-    Effective sensitivity of the network for detecting systolic heart failure.  As an example, assume only 20\% of the patients can be tested with an expensive but perfect test. Using the net to flag the 20 percentile patients at highest risk for further testing would detect 56\% of the cases.
-    \label{fig:icu_systolic_sens}
+    (a) Conditional distributions of network output given the diagnosis is positive or negative for systolic heart failure. (b) Effective sensitivity of the network for detecting systolic heart failure.  As an example, assume only 20\% of the patients can be tested with an expensive but perfect test. Using the net to flag the 20 percentile patients at highest risk for further testing would detect 56\% of the cases.
+    \label{fig:icu_systolic}
     \end{figure}
 }
 
-\def \figIcuCerebralProb {
+
+\def \figIcuCerebral {
     \begin{figure}
     \includegraphics[width=\textwidth]{icu_cerebral_prob}
-    \caption{Cerebral Aneurysm Separation}
-    \vspace{12px}
-    Conditional distributions of network output given the diagnosis is positive or negative for cerebral aneurysm.
-    \label{fig:icu_cerebral_prob}
-    \end{figure}
-}
-
-\def \figIcuCerbralSens {
-    \begin{figure}
     \includegraphics[width=\textwidth]{icu_cerebral_sens}
-    \caption{Cerebral Aneurysm Effective Sensitivity}
+    \caption{Cerebral Aneurysm Results}
     \vspace{12px}
-    Effective sensitivity of the network for detecting a cerebral aneurysm.  As an example, assume only 20\% of the patients can be tested with an expensive but perfect test. Using the net to flag the 20 percentile patients at highest risk for further testing would detect 63\% of the cases.
-    \label{fig:icu_cerebral_sens}
+    (a) Conditional distributions of network output given the diagnosis is positive or negative for cerebral aneurysm. (b) Effective sensitivity of the network for detecting a cerebral aneurysm.  As an example, assume only 20\% of the patients can be tested with an expensive but perfect test. Using the net to flag the 20 percentile patients at highest risk for further testing would detect 63\% of the cases.
+    \label{fig:icu_cerebral}
     \end{figure}
 }
 
-\def \figIcuMyocardProb {
+\def \figIcuMyocard {
     \begin{figure}
     \includegraphics[width=\textwidth]{icu_myocard_prob}
-    \caption{Myocardial Infarction Separation}
-    \vspace{12px}
-    Conditional distributions of network output given the diagnosis is positive or negative for myocardial infarction.
-    \label{fig:icu_myocard_prob}
-    \end{figure}
-}
-
-\def \figIcuMyocardSens {
-    \begin{figure}
     \includegraphics[width=\textwidth]{icu_myocard_sens}
-    \caption{Myocardial Infarction Effective Sensitivity}
+    \caption{Myocardial Infarction Results}
     \vspace{12px}
-    Effective sensitivity of the network for detecting a myocardial infarction.  As an example, assume only 20\% of the patients can be tested with an expensive but perfect test. Using the net to flag the 20 percentile patients at highest risk for further testing would detect 57\% of the cases.
-    \label{fig:icu_myocard_sens}
+    (a) Conditional distributions of network output given the diagnosis is positive or negative for myocardial infarction. (b) Effective sensitivity of the network for detecting a myocardial infarction.  As an example, assume only 20\% of the patients can be tested with an expensive but perfect test. Using the net to flag the 20 percentile patients at highest risk for further testing would detect 57\% of the cases.
+    \label{fig:icu_myocard}
     \end{figure}
 }
 
@@ -123,14 +88,16 @@
     \includegraphics[width=\textwidth]{icu_actual_risk}
     \caption{Actual risk}
     \vspace{12px}
-    Risk categories are valid.  For each risk category an actual risk can be computed with error bars.  The error bars represent the fact that there are 90 conditions being predicted.  Ideally the low risk categories should have an actual risk lower than the estimated risk and the high risk categories should have a risk higher than the estimated risk.  This is due to the fact that risk categories represent an estimated risk $r$ in the range $2^n < r < 2^{n+1}$ for $n > 0$ (high risk) and $2^n > r > 2^{n+1}$ for $n < 0$ (low risk).  This indeed occurs as shown.
+    Risk categories are valid.  For each risk category an actual risk can be computed with error bars.  The error bars represent the fact that there are 90 conditions being predicted.  Ideally the low risk categories should have an actual risk lower than the estimated risk and the high risk categories should have a risk higher than the estimated risk, since the risk estimates were conservative.
     \label{fig:icu_actual_risk}
     \end{figure}
 }
 
 \def \figIcuEmbeddingMethod {
     \begin{figure}
-    \includegraphics[width=\textwidth]{icu_embedding_method}
+    \begin{center}
+    \includegraphics[width=0.8\textwidth]{icu_embedding_method}
+    \end{center}
     \caption{ICD Embedding Method}
     \vspace{12px}
     To compute an embedding of ICD codes from what the net has learned, 43,557 examples are forward passed through the net producing a 43,557 by 90 matrix.  The 90 rows of this matrix represent 43,557 dimensional embeddings of the ICD codes.
@@ -149,13 +116,13 @@
 }
 
 \def \figIcuMaps {
-    \begin{figure}
-    \includegraphics[width=\textwidth]{icu_map_mi}
-    \caption{Semantic Inference Myocardial Infarction}
-    \vspace{12px}
-    This patient was admitted for "ST Elevated Myocardial Infarction".  The neural net correctly predicted that they had low risk of kidney conditions, death, and many heart conditions (colored green).  It predicted high risk of liver conditions and various heart conditions including myocardial infarction and coronary atherosclerosis (colored red).  The patients was eventually in fact diagnosed with myocardial infarction and coronary atherosclerosis among other things (circled in black).
-    \label{fig:icu_map_mi}
-    \end{figure}
+    % \begin{figure}
+    % \includegraphics[width=\textwidth]{icu_map_mi}
+    % \caption{Semantic Inference Myocardial Infarction}
+    % \vspace{12px}
+    % This patient was admitted for "ST Elevated Myocardial Infarction".  The neural net correctly predicted that they had low risk of kidney conditions, death, and many heart conditions (colored green).  It predicted high risk of liver conditions and various heart conditions including myocardial infarction and coronary atherosclerosis (colored red).  The patients was eventually in fact diagnosed with myocardial infarction and coronary atherosclerosis among other things (circled in black).
+    % \label{fig:icu_map_mi}
+    % \end{figure}
     
     \begin{figure}
     \includegraphics[width=\textwidth]{icu_map_chf}
@@ -165,37 +132,37 @@
     \label{fig:icu_map_chf}
     \end{figure}
     
-    \begin{figure}
-    \includegraphics[width=\textwidth]{icu_map_cardarr}
-    \caption{Semantic Inference Cardiac Arrest}
-    \vspace{12px}
-    This patient was admitted for "Cardiac Arrest".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart among other things (circled in black).
-    \label{fig:icu_map_cardarr}
-    \end{figure}
+    % \begin{figure}
+    % \includegraphics[width=\textwidth]{icu_map_cardarr}
+    % \caption{Semantic Inference Cardiac Arrest}
+    % \vspace{12px}
+    % This patient was admitted for "Cardiac Arrest".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart among other things (circled in black).
+    % \label{fig:icu_map_cardarr}
+    % \end{figure}
     
-    \begin{figure}
-    \includegraphics[width=\textwidth]{icu_map_pacer}
-    \caption{Semantic Inference Pacer Erosion}
-    \vspace{12px}
-    This patient was admitted for "Pacer Erosion".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart (circled in black).
-    \label{fig:icu_map_pacer}
-    \end{figure}
+    % \begin{figure}
+    % \includegraphics[width=\textwidth]{icu_map_pacer}
+    % \caption{Semantic Inference Pacer Erosion}
+    % \vspace{12px}
+    % This patient was admitted for "Pacer Erosion".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart (circled in black).
+    % \label{fig:icu_map_pacer}
+    % \end{figure}
     
-    \begin{figure}
-    \includegraphics[width=\textwidth]{icu_map_stseg}
-    \caption{Semantic Inference ST Elevation}
-    \vspace{12px}
-    This patient was admitted for "St-Segment Elevation Myocardial Infarction/Cardiac Cath".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart (circled in black).
-    \label{fig:icu_map_stseg}
-    \end{figure}
+    % \begin{figure}
+    % \includegraphics[width=\textwidth]{icu_map_stseg}
+    % \caption{Semantic Inference ST Elevation}
+    % \vspace{12px}
+    % This patient was admitted for "St-Segment Elevation Myocardial Infarction/Cardiac Cath".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart (circled in black).
+    % \label{fig:icu_map_stseg}
+    % \end{figure}
     
-    \begin{figure}
-    \includegraphics[width=\textwidth]{icu_map_ventach}
-    \caption{Semantic Inference Ventricular Tachycardia}
-    \vspace{12px}
-    This patient was admitted for ventricular tachycardia.  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart (circled in black).
-    \label{fig:icu_map_ventach}
-    \end{figure}
+    % \begin{figure}
+    % \includegraphics[width=\textwidth]{icu_map_ventach}
+    % \caption{Semantic Inference Ventricular Tachycardia}
+    % \vspace{12px}
+    % This patient was admitted for ventricular tachycardia.  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart (circled in black).
+    % \label{fig:icu_map_ventach}
+    % \end{figure}
     
     \begin{figure}
     \includegraphics[width=\textwidth]{icu_map_brain}

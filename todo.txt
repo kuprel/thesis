@@ -1,17 +1,10 @@
 Critical Care
 
 references
-keep effective sensitivity and separation figures together, maybe one giant figure?
-model architecture figure
 more references
 
-multiple uses of variables
-I_test
-g
-i, j, k, l
-
-y_ijk = y_ik
-explain kernel bayes
+list icd codes
+list signals
 
 Dermatology
 
