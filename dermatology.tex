@@ -39,7 +39,7 @@ For conclusiveness, the model and dermatologists are tested using strictly biops
 
 Where $TP$ (true positives) is the number of correctly predicted malignant lesions, $P$ is the number of malignant lesions shown, $TN$ (true negatives) is the number of correctly predicted benign lesions, and $N$ is the number of benign lesions shown. When a test set is fed through the CNN, it outputs a probability, $p$, of malignancy, per image. The sensitivity and specificity given these probabilities are computed by choosing a threshold probability $t$ such that the prediction $y$ for each image is given by $y = p > t$. Varying $t$ in the interval $[0,1]$ generates a curve of sensitivities and specificities that the CNN can achieve.
 
-\subsection{Datasets}
+\subsection{Dataset}
 The dataset comes from a combination of open-access dermatology repositories, the ISIC Dermoscopic Archive, the Edinburgh Dermofit Library, and data from the Stanford Hospital. The images from the online open-access dermatology repositories are annotated by dermatologists, not necessarily through biopsy. The ISIC Archive data used is composed strictly of melanocytic lesions that are biopsy-proven and annotated as malignant or benign. The Edinburgh Dermofit Library and data from the Stanford Hospital are biopsy-proven and annotated by individual disease names (e.g. actinic keratosis). 
 
 \subsection{Taxonomy}

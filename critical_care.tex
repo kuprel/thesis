@@ -5,19 +5,17 @@
 \section{Introduction}
 Wearable devices are becoming more common.  Over 100 million people wear an Apple Watch \cite{cybart_2021}.  This device is capable of measuring both a photoplethysmogram (PPG) and an electrocardiogram (ECG).  It has been FDA approved to detect atrial fibrillation, an irregular beating of the heart \cite{perez2019large}.  Maybe these devices can be used to detect other conditions as well.  While smartwatch ECG and PPG data is not yet openly available in large quantities, there are large amounts of data available to researchers for patients in hospital intensive care units (ICU) \cite{johnson2016mimic}.  The waveforms that smartwatches measure are also measured in ICUs.
 
-The distribution of patients in an ICU is somewhat different from the distribution of smartwatch users.  Can detecting conditions with ICU data make progress toward detecting conditions in smartwatch users?  As demonstrated \cite{kuprel2017dermatologist}, a network trained to recognize everyday objects like cats and dogs can be adapted to detect various skin conditions.  Images of everyday objects are significantly more abundant, and more easily labeled, than images of skin conditions.  Similarly, waveforms and diagnoses collected from sick patients in the ICU are significantly more abundant than waveforms and diagnoses collected from smartwatches.  Progress can be made toward detecting medical conditions with smartwatches by first training on an abundant data source with associated diagnosis labels.  
+The distribution of patients in an ICU is somewhat different from the distribution of smartwatch users.  Can detecting conditions with ICU data make progress toward detecting conditions in smartwatch users?  As demonstrated \cite{kuprel2017dermatologist}, a network trained to recognize everyday objects like cats and dogs can be adapted to detect various skin conditions.  Images of everyday objects are significantly more abundant, and more easily labeled, than images of skin conditions.  Similarly, waveforms and diagnoses collected from sick patients in the ICU are significantly more abundant than waveforms and diagnoses collected from smartwatch users.  Progress can be made toward detecting medical conditions with smartwatches by first training on an abundant data source with associated diagnosis labels.  
 
 The specific problem of detecting conditions in ICU patients is itself important.  Admission to the ICU is associated with risk of acute mortality given critical illness for those patients, which can include shock and end organ damage. During this period, patients are closely monitored in the intensive care setting with both invasive and noninvasive sensor data and frequent lab monitoring in order to effectively determine and prevent complications of critical illness.  Physicians often use risk scores designed to identify and predict patients’ risk of conditions such as shock: general physiologic scoring like shock index, or more specifically septic shock (qSOFA score) \cite{seymour2016assessment} or cardiogenic shock, completing Fick’s formula for cardiac index, cardiac output, and stroke volume \cite{fick1870ueber}.  Can deep learning can be used to learn risk analyses from data?
 
 The approach taken is to solve the specific problem of detecting medical conditions in ICU patients with known diagnoses.  This step is important for solving the broader problem of detecting medical conditions with a smartwatch, which itself is important for solving the even broader problem of detecting life threatening medical conditions early with ubiquitous sensors.
 
 \subsection{Dataset}
-\figIcuIcdMi
-\figIcuExampleWaveforms
 
 A large hospital-scale dataset collected by MIT researchers in a Harvard teaching hospital, called MIMIC \cite{johnson2016mimic}, contains raw data collected from 53,423 distinct hospital admissions.  Only a subset of this enormous dataset was used.  In particular, the waveforms and diagnoses were used.  Diagnoses are coded for insurance billing purposes in a taxonomy called the International Classification of Diseases (ICD).  This taxonomy comprises all known medical conditions. See Figure \ref{fig:icu_icd_mi} for an example of how the ICD code for "acute myocardial infarction" is categorized.  Each patient is diagnosed with a set of conditions per hospital admission.
 
-For each hospital admission a set of waveforms are recorded, and each for different lengths of time.  Many waveforms are corrupt or invalid.  Many invalid measurements correspond to times when poor contact is made with the sensor.  In addition, the waveforms are misaligned by up to 500ms.  Waveforms were sampled at 125Hz.  Up to 15 different waveforms were measured per patient.  These waveforms $\mathcal{S}$ include:
+For each hospital admission a set of waveforms are recorded, and each for different lengths of time.  Many waveforms are corrupt or invalid.  Many invalid measurements correspond to times when poor contact is made with the sensor.  In addition, the waveforms are misaligned by up to 500ms.  Waveforms were sampled at 125Hz.  Up to 15 different waveforms were measured per patient.  These waveforms, denoted $\mathcal{S}$, include:
 
 \begin{itemize}
     \item PLETH: Photoplethysmogram
@@ -29,8 +27,12 @@ For each hospital admission a set of waveforms are recorded, and each for differ
     \item I, II, III, V, AVR, MCL: Electrocardiogram leads
 \end{itemize}
 
-Care was taken to transform the hospital-scale raw data dump into a form that a neural net could be trained with.  For example, the waveform records had to be matched to the chart information.  This was done using patient identifiers and timestamps.  Most of the waveforms were matched, but some were unable to be matched.
+Care was taken to transform the hospital-scale raw data dump into a form that a neural net could be trained with.  For example, the waveform records had to be matched to the chart information.  This was done using patient identifiers and timestamps.  Most of the waveforms were matched, but some could not be.
 
+\figIcuIcdMi
+\figIcuExampleWaveforms
+
+\pagebreak
 \section{Methods}
 
 Consider a clean dataset $\mathcal{D}$ of waveforms $x$ and ICD codes $y$.  The dataset contains $n > 10,000$ patients and each patient $i$ had a hospital stay long enough to produce $m_i$ examples.  Each example contains $|\mathcal{S}|=15$ waveforms sampled at 125Hz for $T = 2048$ samples, or about 16 seconds.  If a patient did not have waveform $s$ measured for example $j$, then $x_{ijs} = \mathbf{0} \in \mathbb{R}^T$.  The label $y_i$ for patient $i$ is a vector of $d=90$ binary values and $y_{ik} = 1$ if patient $i$ was diagnosed for ICD code $k$.  The dataset is described as follows
@@ -66,21 +68,21 @@ The net is trained with batches of examples of size $b = 32$.  The batch loss $L
     L(X, Y, \theta) 
         &= \sum_{i=1}^b \ell(f(x_i, \theta), y_i) \\
         &= \sum_{i=1}^b \ell(p_i, y_i) \\
-        &= -\frac{1}{d} \sum_{i=1}^b \sum_{j=1}^d 
-            y_{ij} * \log p_{ij} + (1 - y_{ij}) * \log(1 - p_{ij})
+        &= -\frac{1}{d} \sum_{i=1}^b \sum_{k=1}^d 
+            y_{ik} * \log p_{ik} + (1 - y_{ik}) * \log(1 - p_{ik})
 \end{align}
 
-The parameters $\theta$ are computed with stochastic gradient descent.  The batch loss $L$ is differentiable with respect to the $k$th parameter of $\theta$.
+The parameters $\theta$ are computed with stochastic gradient descent.  The batch loss $L$ is differentiable with respect to the $j$th parameter of $\theta$.
 \begin{align}
-    \frac{\partial L}{\partial \theta_k} 
-        &= \sum_{i=1}^b \sum_{j=1}^d 
-            \frac{\partial \ell}{\partial p_{ij}}  
-            \frac{\partial p_{ij}}{\partial \theta_k} \\
-        &= \frac{1}{d} \sum_{i=1}^b \sum_{j=1}^d
+    \frac{\partial L}{\partial \theta_j} 
+        &= \sum_{i=1}^b \sum_{k=1}^d 
+            \frac{\partial \ell}{\partial p_{ik}}  
+            \frac{\partial p_{ik}}{\partial \theta_j} \\
+        &= \frac{1}{d} \sum_{i=1}^b \sum_{k=1}^d
             \left(
-                \frac{1 - y_{ij}}{1 - p_{ij}} - \frac{y_{ij}}{p_{ij}}
+                \frac{1 - y_{ik}}{1 - p_{ik}} - \frac{y_{ik}}{p_{ik}}
             \right)
-            \frac{\partial p_{ij}}{\partial \theta_k}
+            \frac{\partial p_{ik}}{\partial \theta_j}
 \end{align}
 
 % In matrix-vector form
@@ -96,7 +98,7 @@ To complete this batch loss derivative, and perform gradient descent to compute 
 
 \subsection{Model Architecture}
 
-To take advantage of the stationary process nature of the waveforms, a 1D ConvNet was used.  If the waveforms were properly aligned, it would make sense to have convolution kernels span all the waveforms at once and convolve along the time dimension.  The waveforms, however, are not properly aligned.  They are misaligned by up to 500 ms, or about 64 samples.  This is on the order of the entire size of a convolution kernel.  In fact, the largest convolution kernels in the entire net were only 16 samples long.  To deal with the misalignment, the first 4 layers of the net convolve along the waveforms independently.  After 4 layers, each activation has a larger receptive field.  Dilated convolutions were used to help with this.  Stacked dilated convolutions enable networks to have very large receptive fields with just a few layers, while preserving the input resolution throughout the network \cite{oord2016wavenet}.  
+To take advantage of the stationary nature of the waveforms, a 1D ConvNet was used.  If the waveforms were properly aligned, it would make sense to have convolution kernels span all the waveforms at once and convolve along the time dimension.  The waveforms, however, are not properly aligned.  They are misaligned by up to 500 ms, or about 64 samples.  This is on the order of the entire size of a convolution kernel.  In fact, the largest convolution kernels in the entire net were only 16 samples long.  To deal with the misalignment, the first 4 layers of the net convolve along the waveforms independently.  After 4 layers, each activation has a larger receptive field.  Dilated convolutions were used to help with this.  Stacked dilated convolutions enable networks to have very large receptive fields with just a few layers, while preserving the input resolution throughout the network \cite{oord2016wavenet}.  
 
 Residual layers are used to train a deep network and avoid vanishing gradients \cite{he2016deep}.  These networks were originally developed for computer vision applications but can be used here as well.  To compute the activations $z$ in layer $\ell + 1$ from the activations in layer $\ell$, a residual layer takes the form
 \begin{gather}
@@ -159,12 +161,13 @@ The per-patient example count $m_i$ can then be replaced by a constant $m$, sinc
     \}
 \end{gather}
 
+\figIcuRelativeRisk
+\figIcuActualRisk
+
+\pagebreak
 \section{Results}
 
 \subsection{Relative Risk}
-
-\figIcuRelativeRisk
-\figIcuActualRisk
 
 After performing 3-fold cross validation, there is a prediction for every example in the test set.
 \begin{gather}
@@ -191,25 +194,23 @@ The empirical distributions over $z$ given $y$ can be used to compute a posterio
         {P(Z_k = z \mid Y_k = 0) (1 - \pi_k) + P(Z_k = z \mid Y_k = 1) \ \pi_k}
 \end{gather}
 
-To naively estimate this posterior, one could compute 2 histograms of $Z_k \mid Y_k$, one each for $Y_k=0$ and $Y_k=1$.  That is, bin possible values of $Z_k$ and count how many times the net predicts a value within that range.  Do this for predictions when the label is negative for ICD code $k$, and again for predictions when the label is positive for ICD code $k$.  Finally one would normalize those histograms so that the total areas are 1.  If the bins are too small, the number of occurrences in a particular bin has high variance, and the empirical distribution will be far from smooth.  If the bins are too large, the empirical distribution will be very coarse.  Further, there is often very little data present for the situation when the label is negative for an ICD code.  Is there a more direct way, to avoid binning and counting?  Yes, there is Kernel Bayes Rule \cite{fukumizu2013kernel}.  
+To naively estimate this posterior, one could compute 2 histograms of $Z_k \mid Y_k$, one each for $Y_k=0$ and $Y_k=1$.  That is, bin possible values of $Z_k$ and count how many times the net predicts a value within that range.  Do this for predictions when the label is negative for ICD code $k$, and again for predictions when the label is positive for ICD code $k$.  Finally one would normalize those histograms so that the total areas are 1.  If the bins are too small, the number of occurrences in a particular bin has high variance, and the empirical distribution will be far from smooth.  If the bins are too large, the empirical distribution will be very coarse.  Further, there is often very little data present for the situation when the label is positive for an ICD code.  Is there a more direct way, to avoid binning and counting?  Yes, there is Kernel Bayes Rule \cite{fukumizu2013kernel}.
 
-Kernel Bayes Rule says that given a bunch of observations $(x_i, y_i)$ for $i = 1, \dots, n$, the posterior of $y$ given $x$ can be estimated as
+Kernel Bayes Rule says that given a bunch of observations $(x_i, y_i)$ for $i = 1, \dots, n$, the posterior of $y$ given $x$ can be estimated using a positive definite kernel function $K$ as follows
 \begin{gather}
     \hat{P}(Y = y | X = x) = \frac
         {\sum_{i=1}^n K(x - x_i) \ K(y - y_i)}
         {\sum_{i=1}^n K(x - x_i)}
 \end{gather}
 
-Where $K: \mathbb{R} \mapsto \mathbb{R}$ is a positive definite kernel function.
-
-Applying Kernel Bayes Rule, the posterior can be directly computed without discretizing and binning.
+Applying Kernel Bayes Rule, the posterior can be directly estimated without discretizing and binning.
 \begin{gather}
     \hat{P}(Y_k = 1 \mid Z_k = z) = \frac
         {\sum_{i \in \mathcal{I}} y_{ik} \sum_{j=1}^m K(z - z_{ijk})}
         {\sum_{i \in \mathcal{I}} \sum_{j=1}^m K(z - z_{ijk})}
 \end{gather}
 
-A standard radial basis function (RBF) kernel was used with $\sigma = 0.8$.  For examples of these kernel densities, see Figures \ref{fig:icu_cardio}, \ref{fig:icu_cerebral}, \ref{fig:icu_myocard}, \ref{fig:icu_systolic}.
+A standard radial basis function (RBF) kernel was used with $\sigma = 0.8$.  For examples of these kernel densities, see Figures \ref{fig:icu_cardio}, \ref{fig:icu_systolic}, \ref{fig:icu_cerebral}, \ref{fig:icu_myocard}.
 
 When computing this posterior, it is important that no prediction should depend on its label.  Consider the following naive posterior calculation for a test patient $i$
 \begin{gather}
@@ -227,22 +228,22 @@ There are two issues here.  First, the summation over test patients $\mathcal{I}
 
 The relative risk $r$ can be computed for every patient $i$ in the test set, for every example from their stay $j$, and for every ICD code $k$.
 \begin{gather}
-    \hat{r}_{ijk} = \frac
+    r_{ijk} = \frac
         {\hat{P}(Y_{ik} = 1 \mid Z_k = z_{ijk})}
         {\pi_k}
 \end{gather}
 
-Given relative risk bounds $(r_{\min}, r_{\max})$ examples can be flagged into relative risk groups $\mathcal{F}_k$ for each condition $k$
+Given relative risk bounds $(r_{\min}, r_{\max})$ examples can be placed into relative risk groups $\mathcal{G}_k$ for each condition $k$
 \begin{gather}
-    \mathcal{F}_k(r_{\min}, r_{\max}) = \{ (i, j) \mid r_{\min} < r_{ijk} < r_{\max} \}
+    \mathcal{G}_k(r_{\min}, r_{\max}) = \{ (i, j) \mid r_{\min} < r_{ijk} < r_{\max} \}
 \end{gather}
 
-The relative risk is grouped by powers of 2.  For example, for the ICD code of cardiogenic shock and relative risk group bounded by $r_{\min} = 2$, $r_{\max} = 4$ represents examples flagged to carry twice the estimated risk for that patient to experience a cardiogenic shock sometime during their hospital stay.  The estimated 2x risk for that group is a conservative estimate since examples in that group could carry as much as 4x the risk.  Similarly, the relative risk group bounded by $r_{\min} = 1/4$, $r_{\max} = 1/2$ represents examples flagged to carry half the estimated risk for that patient to experience a cardiogenic shock sometime during their hospital stay.  Here, the conservative estimate of 1/2 for the low risk group corresponds to $r_{\max}$ rather than $r_{\min}$ as with the high risk group.  A grouping of all patients into risk groups for 24 conditions is shown in Figure \ref{fig:icu_relative_risk}.
+This grouping serves to later assess the validity of the relative risk predictions across ICD codes.  The relative risks are grouped by powers of 2.  For example, for the ICD code of cardiogenic shock and relative risk group bounded by $r_{\min} = 2$, $r_{\max} = 4$ represents patients flagged to carry twice the estimated risk for experiencing a cardiogenic shock sometime during their hospital stay.  The estimated 2x risk for that group is a conservative estimate since patients in that group could carry as much as 4x the risk.  Similarly, the relative risk group bounded by $r_{\min} = 1/4$, $r_{\max} = 1/2$ represents patients flagged to carry half the estimated risk for experiencing cardiogenic shock sometime during their hospital stay.  Here, the conservative estimate of 1/2 for the low risk group corresponds to $r_{\max}$ rather than $r_{\min}$ as with the high risk group.  A grouping of all patients into risk groups for 24 conditions is shown in Figure \ref{fig:icu_relative_risk}.
 
 Are the risk groups correct?  For each risk group $g = (r_{\min}, r_{\max})$ and ICD code $k$, the actual risk $a_k(g)$ observed can be computed.  It is computed as the fraction of examples that fall within that risk group that were ultimately diagnosed with ICD code $k$, divided by the prevalence of that condition $\pi_k$.
 \begin{gather}
     a_k(g) = \frac{1}{\pi_k} \left( 
-        \frac{\sum_{(i, j) \in \mathcal{F}_k(g)} y_{ik}}{|\mathcal{F}_k(g)|}
+        \frac{\sum_{(i, j) \in \mathcal{G}_k(g)} y_{ik}}{|\mathcal{G}_k(g)|}
     \right)
 \end{gather}
 
@@ -254,14 +255,15 @@ The means and standard deviations of actual risk for each risk group can be comp
 
 These are plotted in Figure \ref{fig:icu_actual_risk}.  The results show that the observed risk for each group is in fact better than the conservative estimate, for all groups.  That is, for low risk groups, the observed risk is lower and for high risk groups, the observed risk is higher.
 
-\subsection{Effective Sensitivity}
-
 \figIcuCardio
 \figIcuSystolic
 \figIcuCerebral
 \figIcuMyocard
 
-Can a cheap, ubiquitous, and maybe unreliable test be used to recommend patients for an expensive, limited, but more reliable test?  Imagine for example, the situation of a smartwatch user.  The smartwatch can measure various waveforms such as ECG and PPG for little cost, and over 100 million people have one.  The smartwatch could flag users to go to the hospital where they could receive something more expensive and reliable like a biopsy or MRI, depending on the condition flagged.
+\pagebreak
+\subsection{Effective Sensitivity}
+
+Can a cheap, ubiquitous, and maybe unreliable test be used to recommend patients for an expensive, limited, but more reliable test?  Imagine for example, the situation of a smartwatch user.  A smartwatch can measure various waveforms such as ECG and PPG for little cost, and over 100 million people have one.  A smartwatch could send a notification to the user that they should consider getting a more expensive and reliable test like a biopsy or MRI, depending on the condition flagged.
 
 Sensitivity is calculated as follows
 \begin{gather}
@@ -272,30 +274,39 @@ Sensitivity is calculated as follows
             {\sum_{i \in \mathcal{I}} y_{ik}}
 \end{gather}
 
-For simplicity, assume there is a perfect test for condition $k$.  The prediction for any patient $i$ having that condition is always correct, $y_{ik} = \hat{y}_{ik}$.  Assume that due to limited resources, only a subset of the patients $\mathcal{J}_k \subset \mathcal{I}$ can be tested with this test. The untested patients are effectively predicted to not have the condition, that is $\hat{y}_{ik} = 0$ for $i \notin \mathcal{J}_k$.
+For simplicity, assume there is a perfect test for condition $k$.  The prediction for any patient $i$ having that condition is always correct, $y_{ik} = \hat{y}_{ik}$.  Assume that due to limited resources, only a subset of the patients $\mathcal{J}_k \subset \mathcal{I}$ can be tested with this test. The untested patients are effectively predicted to not have the condition, that is $\hat{y}_{ik} = 0$ for $i \notin \mathcal{J}_k$.  Hence we have an effective sensitivity
 \begin{gather}
     \text{sensitivity}_k = \frac
         {\sum_{i \in \mathcal{J}_k} y_{ik}}
         {\sum_{i \in \mathcal{I}} y_{ik}}
 \end{gather}
 
-The challenge is to choose the best set of patients $\mathcal{J}_k$ to test for condition $k$.  
-
-If the patients are chosen randomly, the expected sensitivity is simply the percent of patients tested.
+The challenge is to choose the best set of patients $\mathcal{J}_k$ to test for condition $k$.  If the patients are chosen randomly, the expected effective sensitivity is simply the percent of patients tested.
 \begin{gather}
     \mathbb{E}_{\mathcal{J}_k}[\text{sensitivity}_k]
         = \frac
             {\mathbb{E}_{\mathcal{J}_k}[\sum_{i \in \mathcal{J}_k} y_{ik}]}
             {\sum_{i \in \mathcal{I}} y_{ik}}
-        = \frac{c * \pi_k}{n * \pi_k} 
-        = \frac{c}{n}
+        = \frac{|\mathcal{J}_k| * \pi_k}{|\mathcal{I}| * \pi_k} 
+        = \frac{|\mathcal{J}_k|}{|\mathcal{I}|} 
 \end{gather}
 
-What if patients are triaged for the expensive test with the predictions given by the net?  For many conditions it is easy to achieve 3x improvement over random testing.  See Figures \ref{fig:icu_cardio}, \ref{fig:icu_myocard}, \ref{fig:icu_cerebral}, \ref{fig:icu_systolic}.
+What if patients are triaged for the expensive test with the predictions given by the net?  For many conditions it is easy to achieve 3x improvement over random testing.  See Figures \ref{fig:icu_cardio}, \ref{fig:icu_systolic}, \ref{fig:icu_cerebral}, \ref{fig:icu_myocard} for results.
+
+\pagebreak
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=0.8\textwidth]{icu_embedding_method}
+\end{center}
+\caption{ICD Embedding Method}
+\vspace{12px}
+To compute an embedding of ICD codes from what the net has learned, 43,557 examples are forward passed through the net producing a 43,557 by 90 matrix.  The 90 rows of this matrix represent 43,557 dimensional embeddings of the ICD codes.
+\label{fig:icu_embedding_method}
+\end{figure}
 
 \subsection{Semantic Space Inference}
 
-Many ICD codes are highly similar.  For example, consider the possible codes for sepsis conditions.  There are ICD codes 785.52: Septic Shock, 995.92: Severe Sepsis, and 038: Septicemia, all placed in wildy different places within the ICD taxonomy.  The common ancestor of these codes in the ICD taxonomy, maintained by the World Health Organization, is the root of the entire taxonomy.  If the net predicts code 785.52 but the actual diagnosis is 995.92, the net is penalized.  Maybe the net is generally right about its predictions, but is unreliable at picking the exact ICD code that the doctor happened to pick.  Specifically, the net appears to be more reliable at detecting the organ that the condition affects.  For example it seems to know if something is wrong with the heart, brain, or liver.  A prediction heat map produced by the net can be viewed by plotting its inference in a semantic space of ICD codes.  The semantic space self organizes by organ, maybe the most interesting outcome of this work.  It's fascinating that from such simple waveforms, measuring conductivity across the heart (ECG) or optically sensing blood flow in an artery in the finger (PPG), a neural net can develop a sense of which organs are working properly and which are not.
+Many ICD codes are highly similar.  For example, consider the possible codes for sepsis conditions.  There are ICD codes for Septic Shock (785.52), Severe Sepsis (995.92), and Septicemia (038), all placed in wildy different places within the taxonomy.  The common ancestor of these codes in the ICD taxonomy, maintained by the World Health Organization, is the root of the entire taxonomy.  If the net predicts code 785.52 but the actual diagnosis is 995.92, the net is penalized.  Maybe the net is generally right about its predictions, but is unreliable at picking the exact ICD code that the doctor happened to pick.  That does seem to be the case.  Specifically, the net appears to be more reliable at detecting the organ that the condition affects.  For example it seems to know if something is wrong with the heart, brain, or liver.  The net's prediction can be visualized as a heat map in a semantic space of ICD codes.  The semantic space self organizes by organ, maybe the most interesting outcome of this work.  See Figure \ref{fig:icu_icd_map}.  It's fascinating that from such simple waveforms, measuring conductivity across the heart (ECG) or optically sensing blood flow in an artery in the finger (PPG), a neural net can develop a sense of which organs are working properly and which are not.
 
 Semantic space embeddings are common in the field of Natural Language Processing, with word2vec being perhaps the most famous \cite{mikolov2013efficient}.
 
@@ -310,10 +321,9 @@ The predictions from before can be used to embed the ICD codes into a lower dime
 
 $\mathcal{Z}$ can be shaped into a matrix $Z$ of size $d \times m |\mathcal{I}|$ where the $d$ rows of this matrix are vector representations of the $d$ ICD Codes.  The dimensionality of these vectors can be reduced from $m |\mathcal{I}|$ to 2 to visualize them.  As with the previous work in dermatology, this can be done using TSNE \cite{van2008visualizing}.
 
-The result of this embedding of ICD codes is shown in \ref{fig:icu_embedding_method}. Conditions are color coded by which part of the body they affect.  Red circles are conditions that affect the heart.  These conditions include cardiogenic shock, coronary atherosclerosis, atrial flutter, systolic heart failure, and myocardial infarction.  Green circles are conditions that affect the brain.  These conditions include cerebral edema, brain cancer, cerebral aneurysm, intracerebral hemorrhage.  It’s interesting that skull fracture found its way into this region.  Yellow circles are conditions that affect the liver.  These conditions include cirrhosis, hepatitis, and liver cancer.  It is interesting that alcohol abuse and alcohol dependence syndrome found their way into this region, and are also close to the brain conditions.  Blue circles are conditions that affect the lungs.  These conditions include pulmonary collapse, pneumonia, and acute respiratory failure.  It is remarkable that a highly articulate semantic space can be learned from simple waveforms.  Further similar ICD codes are close together in this semantic space that may be far apart in the ICD taxonomy.  For example, the ICD codes 785.52: Septic Shock, 995.92: Severe Sepsis, and 038: Septicemia.  The nearest common ancestor of these ICD codes in the taxonomy is the root of the entire taxonomy of all medical conditions that exist.  But the net learned that they were similar semantically based on the waveforms it was trained with.
+The result of this embedding of ICD codes is shown in Figure \ref{fig:icu_embedding_method}. Conditions are color coded by which part of the body they affect.  Red circles are conditions that affect the heart.  These conditions include cardiogenic shock, coronary atherosclerosis, atrial flutter, systolic heart failure, and myocardial infarction.  Green circles are conditions that affect the brain.  These conditions include cerebral edema, brain cancer, cerebral aneurysm, intracerebral hemorrhage.  It’s interesting that skull fracture found its way into this region.  Yellow circles are conditions that affect the liver.  These conditions include cirrhosis, hepatitis, and liver cancer.  It is interesting that alcohol abuse and alcohol dependence syndrome found their way into this region, and are also close to the brain conditions.  Blue circles are conditions that affect the lungs.  These conditions include pulmonary collapse, pneumonia, and acute respiratory failure.  It is remarkable that a highly articulate semantic space can be learned from simple waveforms.  Further similar ICD codes are close together in this semantic space that may be far apart in the ICD taxonomy.  For example, the ICD codes 785.52: Septic Shock, 995.92: Severe Sepsis, and 038: Septicemia.  The nearest common ancestor of these ICD codes in the taxonomy is the root of the entire taxonomy of all medical conditions that exist.  But the net learned that they were similar semantically based on the waveforms it was trained with.
 
 Now that this semantic space and relative risk have been computed for all the test patients, the net's predictions can be visualized on a patient by patient level.  Here the ICD codes are colored according to the risk level that patient has.  Actual diagnoses are circled in white.  See Figures \ref{fig:icu_map_chf}, \ref{fig:icu_map_brain}, \ref{fig:icu_map_liver}.
 
-\figIcuEmbeddingMethod
 \figIcuIcdMap
 \figIcuMaps
