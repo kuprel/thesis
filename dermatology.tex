@@ -39,6 +39,14 @@ For conclusiveness, the model and dermatologists are tested using strictly biops
 
 Where $TP$ (true positives) is the number of correctly predicted malignant lesions, $P$ is the number of malignant lesions shown, $TN$ (true negatives) is the number of correctly predicted benign lesions, and $N$ is the number of benign lesions shown. When a test set is fed through the CNN, it outputs a probability, $p$, of malignancy, per image. The sensitivity and specificity given these probabilities are computed by choosing a threshold probability $t$ such that the prediction $y$ for each image is given by $y = p > t$. Varying $t$ in the interval $[0,1]$ generates a curve of sensitivities and specificities that the CNN can achieve.
 
+\begin{figure}
+\includegraphics[width=\textwidth]{derm_sens_class}
+\caption{Example Sensitive Classifier}
+\vspace{12px}
+When evaluating a skin lesion it is important to err on the side of predicting that it is malignant if it is benign than the predict that it is benign if it is malignant.  That is, false negatives are more dangerous than false positives.  In the case of a false positive, the lesion is simple biopsied, little harm done.  In the case of a false negative, the patient leaves thinking they are healthy but actually has cancer that may have been easily treatable.  To make a prediction the net must either classify the lesion as benign or malignant, not output a probability.  Therefore there needs to be a probability threshold with which any probability above it is malignant and anything below it is benign.  Consider the conditional distributions of net probabilities given whether the lesion is benign or malignant shown above.  The threshold is chosen such that almost all malignant lesions lie above the threshold, resulting in very few false negatives.  This threshold corresponds to a sensitive classifier.
+\label{fig:derm_sens_class}
+\end{figure}
+
 \subsection{Dataset}
 The dataset comes from a combination of open-access dermatology repositories, the ISIC Dermoscopic Archive, the Edinburgh Dermofit Library, and data from the Stanford Hospital. The images from the online open-access dermatology repositories are annotated by dermatologists, not necessarily through biopsy. The ISIC Archive data used is composed strictly of melanocytic lesions that are biopsy-proven and annotated as malignant or benign. The Edinburgh Dermofit Library and data from the Stanford Hospital are biopsy-proven and annotated by individual disease names (e.g. actinic keratosis). 
 
