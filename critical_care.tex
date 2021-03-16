@@ -1,17 +1,20 @@
 \chapter{Critical Care}
 
-\section{Introduction}
+\section{Overview}
 Wearable devices are becoming more common.  Over 100 million people wear an Apple Watch \cite{cybart_2021}.  This device is capable of measuring both a photoplethysmogram (PPG) and an electrocardiogram (ECG).  It has been FDA approved to detect atrial fibrillation, an irregular beating of the heart \cite{perez2019large}.  Maybe these devices can be used to detect other conditions as well.  While smartwatch ECG and PPG data is not yet openly available in large quantities, there are large amounts of data available to researchers for patients in hospital intensive care units (ICU) \cite{johnson2016mimic}.  The waveforms that smartwatches measure are also measured in ICUs.
 
-The distribution of patients in an ICU is somewhat different from the distribution of smartwatch users.  Can detecting conditions with ICU data make progress toward detecting conditions in smartwatch users?  As demonstrated \cite{kuprel2017dermatologist}, a network trained to recognize everyday objects like cats and dogs can be adapted to detect various skin conditions.  Images of everyday objects are significantly more abundant, and more easily labeled, than images of skin conditions.  Similarly, waveforms and diagnoses collected from sick patients in the ICU are significantly more abundant than waveforms and diagnoses collected from smartwatch users.  Progress can be made toward detecting medical conditions with smartwatches by first training on an abundant data source with associated diagnosis labels.  
+The distribution of patients in an ICU is somewhat different from the distribution of smartwatch users.  Can detecting conditions with ICU data make progress toward detecting conditions in smartwatch users?  As I demonstrated \cite{kuprel2017dermatologist}, a network trained to recognize everyday objects like cats and dogs can be adapted to detect various skin conditions.  Images of everyday objects are significantly more abundant, and more easily labeled, than images of skin conditions.  Similarly, waveforms and diagnoses collected from sick patients in the ICU are significantly more abundant than waveforms and diagnoses collected from smartwatch users.  Progress can be made toward detecting medical conditions with smartwatches by first training on an abundant data source with associated diagnosis labels.  
 
 The specific problem of detecting conditions in ICU patients is itself important.  Admission to the ICU is associated with risk of acute mortality given critical illness for those patients, which can include shock and end organ damage. During this period, patients are closely monitored in the intensive care setting with both invasive and noninvasive sensor data and frequent lab monitoring in order to effectively determine and prevent complications of critical illness.  Physicians often use risk scores designed to identify and predict patients’ risk of conditions such as shock: general physiologic scoring like shock index, or more specifically septic shock (qSOFA score) \cite{seymour2016assessment} or cardiogenic shock, completing Fick’s formula for cardiac index, cardiac output, and stroke volume \cite{fick1870ueber}.  Can deep learning can be used to learn risk analyses from data?
 
 The approach taken is to solve the specific problem of detecting medical conditions in ICU patients with known diagnoses.  This step is important for solving the broader problem of detecting medical conditions with a smartwatch, which itself is important for solving the even broader problem of detecting life threatening medical conditions early with ubiquitous sensors.
 
+\pagebreak
+\section{Methods}
+
 \subsection{Dataset}
 
-A large hospital-scale dataset collected by MIT researchers in a Harvard teaching hospital, called MIMIC \cite{johnson2016mimic}, contains raw data collected from 53,423 distinct hospital admissions.  Only a subset of this enormous dataset was used.  In particular, the waveforms and diagnoses were used.  Diagnoses are coded for insurance billing purposes in a taxonomy called the International Classification of Diseases (ICD).  This taxonomy comprises all known medical conditions. See Figure \ref{fig:icu_icd_mi} for an example of how the ICD code for "acute myocardial infarction" is categorized.  Each patient is diagnosed with a set of conditions per hospital admission.
+A large hospital-scale dataset collected by MIT researchers in a Harvard teaching hospital, called MIMIC \cite{johnson2016mimic}, contains raw data collected from 53,423 distinct hospital admissions.  Only a subset of this enormous dataset was used.  In particular, the waveforms and diagnoses were used.  Diagnoses are coded for insurance billing purposes in a taxonomy called the International Classification of Diseases (ICD).  This taxonomy comprises all known medical conditions. See Figure \ref{fig:icu_icd_mi} for an example of how the ICD code for ``acute myocardial infarction" is categorized.  Each patient is diagnosed with a set of conditions per hospital admission.
 
 For each hospital admission a set of waveforms are recorded, and each for different lengths of time.  Many waveforms are corrupt or invalid.  Many invalid measurements correspond to times when poor contact is made with the sensor.  In addition, the waveforms are misaligned by up to 500ms.  Waveforms were sampled at 125Hz.  Up to 15 different waveforms were measured per patient.  These waveforms, denoted $\mathcal{S}$, include:
 
@@ -31,7 +34,7 @@ Care was taken to transform the hospital-scale raw data dump into a form that a 
 \includegraphics[width=0.8\textwidth]{icu_icd_mi}
 \caption{ICD Codes}
 \vspace{12px}
-The International Classification of Diseases (ICD) is a taxonomy of all medical conditions maintained by the World Health Organization.  "Acute myocardial infarction", for example, is a descendant of "Acute ischemic heart diseases", which itself is a descendant of "Ischemic heart diseases", which itself is a descendant of "Diseases of the circulatory system".  "Acute myocardial infarction" is then further subdivided if more granularity is required.
+The International Classification of Diseases (ICD) is a taxonomy of all medical conditions maintained by the World Health Organization.  ``Acute myocardial infarction", for example, is a descendant of ``Acute ischemic heart diseases", which itself is a descendant of ``Ischemic heart diseases", which itself is a descendant of ``Diseases of the circulatory system".  ``Acute myocardial infarction" is then further subdivided if more granularity is required.
 \label{fig:icu_icd_mi}
 \end{figure}
     
@@ -42,9 +45,6 @@ The International Classification of Diseases (ICD) is a taxonomy of all medical 
 Waveforms are sampled at 125Hz with 8 bit resolution.  An example contains 2048 samples, or about 16 seconds.  Waveform types include 3 ECG leads (II, V, AVR) shown in blue, respiration shown in in green, and photoplethysmogram and arterial blood pressure, both shown in red.  An example is labeled with a set of ICD codes.  The examples shown were correctly detected by the net.  That is, the patient that produced the waveforms shown was eventually diagnosed with the ICD code below.  In the upper left we see an example from a patient that was correctly flagged for cardiogenic shock.  The the upper right we have an example of a detected cerebral aneurysm.  In the lower left and right we have examples of myocardial infarction and liver cirrhosis.
 \label{fig:icu_example_waveforms}
 \end{figure}
-
-\pagebreak
-\section{Methods}
 
 Consider a clean dataset $\mathcal{D}$ of waveforms $x$ and ICD codes $y$.  The dataset contains $n > 10,000$ patients and each patient $i$ had a hospital stay long enough to produce $m_i$ examples.  Each example contains $|\mathcal{S}|=15$ waveforms sampled at 125Hz for $T = 2048$ samples, or about 16 seconds.  If a patient did not have waveform $s$ measured for example $j$, then $x_{ijs} = \mathbf{0} \in \mathbb{R}^T$.  The label $y_i$ for patient $i$ is a vector of $d=90$ binary values and $y_{ik} = 1$ if patient $i$ was diagnosed for ICD code $k$.  The dataset is described as follows
 \begin{gather}
@@ -344,16 +344,6 @@ The challenge is to choose the best set of patients $\mathcal{J}_k$ to test for 
         = \frac{|\mathcal{J}_k|}{|\mathcal{I}|} 
 \end{gather}
 
-\begin{figure}
-\begin{center}
-\includegraphics[width=0.8\textwidth]{icu_expens_ubiqu}
-\end{center}
-\caption{Effective Sensitivity Motivation}
-\vspace{12px}
-Can a cheap, ubiquitous, and maybe unreliable test be used to recommend patients for an expensive, limited, but more reliable test?  Consider the example conditional distributions shown above for 2 different classifiers, one expensive and one ubiquitous.  Green and red curves represent distributions over scores the net outputs given that the label is negative or positive, respectively.  The ubiquitous classifier does a poor job at separating the distributions of positive and negative cases, but still provides some information.  We propose to use the score from the ubiquitous test to triage users for the expensive test, increasing the expensive test's effective sensitivity.
-\label{fig:icu_expens_ubiqu}
-\end{figure}
-
 What if patients are triaged for the expensive test with the predictions given by the net?  For many conditions it is easy to achieve 3x improvement over random testing.  See Figures \ref{fig:icu_cardio}, \ref{fig:icu_systolic}, \ref{fig:icu_cerebral}, \ref{fig:icu_myocard} for results.
 
 \pagebreak
@@ -400,7 +390,7 @@ TSNE was applied to high dimensional ICD code embeddings to produce a 2D visuali
 \includegraphics[width=\textwidth]{icu_map_mi}
 \caption{Semantic Inference Myocardial Infarction}
 \vspace{12px}
-This patient was admitted for "ST Elevated Myocardial Infarction".  The neural net correctly predicted that they had low risk of kidney conditions, death, and many heart conditions (colored green).  It predicted high risk of liver conditions and various heart conditions including myocardial infarction and coronary atherosclerosis (colored red).  The patients was eventually in fact diagnosed with myocardial infarction and coronary atherosclerosis among other things (circled in black).
+This patient was admitted for ``ST Elevated Myocardial Infarction".  The neural net correctly predicted that they had low risk of kidney conditions, death, and many heart conditions (colored green).  It predicted high risk of liver conditions and various heart conditions including myocardial infarction and coronary atherosclerosis (colored red).  The patients was eventually in fact diagnosed with myocardial infarction and coronary atherosclerosis among other things (circled in black).
 \label{fig:icu_map_mi}
 \end{figure}
 
@@ -408,7 +398,7 @@ This patient was admitted for "ST Elevated Myocardial Infarction".  The neural n
 \includegraphics[width=\textwidth]{icu_map_chf}
 \caption{Semantic Inference Congestive Heart Failure}
 \vspace{12px}
-This patient was admitted for "Congestive Heart Failure".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart, and died (circled in black).
+This patient was admitted for ``Congestive Heart Failure".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart, and died (circled in black).
 \label{fig:icu_map_chf}
 \end{figure}
 
@@ -416,7 +406,7 @@ This patient was admitted for "Congestive Heart Failure".  The neural net predic
 \includegraphics[width=\textwidth]{icu_map_cardarr}
 \caption{Semantic Inference Cardiac Arrest}
 \vspace{12px}
-This patient was admitted for "Cardiac Arrest".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart among other things (circled in black).
+This patient was admitted for ``Cardiac Arrest".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart among other things (circled in black).
 \label{fig:icu_map_cardarr}
 \end{figure}
 
@@ -424,7 +414,7 @@ This patient was admitted for "Cardiac Arrest".  The neural net predicted that t
 \includegraphics[width=\textwidth]{icu_map_pacer}
 \caption{Semantic Inference Pacer Erosion}
 \vspace{12px}
-This patient was admitted for "Pacer Erosion".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart (circled in black).
+This patient was admitted for ``Pacer Erosion".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart (circled in black).
 \label{fig:icu_map_pacer}
 \end{figure}
 
@@ -432,7 +422,7 @@ This patient was admitted for "Pacer Erosion".  The neural net predicted that th
 \includegraphics[width=\textwidth]{icu_map_stseg}
 \caption{Semantic Inference ST Elevation}
 \vspace{12px}
-This patient was admitted for "St-Segment Elevation Myocardial Infarction/Cardiac Cath".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart (circled in black).
+This patient was admitted for ``St-Segment Elevation Myocardial Infarction/Cardiac Cath".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart (circled in black).
 \label{fig:icu_map_stseg}
 \end{figure}
 
@@ -448,7 +438,7 @@ This patient was admitted for ventricular tachycardia.  The neural net predicted
 \includegraphics[width=\textwidth]{icu_map_brain}
 \caption{Semantic Inference Intracranial Hemorrhage}
 \vspace{12px}
-This patient was admitted for "Intracranial Hemorrhage".  The neural net predicted that they had low risk of heart conditions and septic conditions (colored green).  It predicted high risk of brain conditions (colored red).  The patients was eventually diagnosed with cerebral edema and intracerebral hemorrhage (circled in black).
+This patient was admitted for ``Intracranial Hemorrhage".  The neural net predicted that they had low risk of heart conditions and septic conditions (colored green).  It predicted high risk of brain conditions (colored red).  The patients was eventually diagnosed with cerebral edema and intracerebral hemorrhage (circled in black).
 \label{fig:icu_map_brain}
 \end{figure}
 
@@ -456,6 +446,6 @@ This patient was admitted for "Intracranial Hemorrhage".  The neural net predict
 \includegraphics[width=\textwidth]{icu_map_liver}
 \caption{Semantic Inference Abdominal Pain}
 \vspace{12px}
-This patient was admitted for "Abdominal Pain".  The neural net predicted that they had low risk of brain and heart conditions (colored green).  It predicted high risk of liver conditions (colored red).  The patients was eventually diagnosed with chronic liver cirrhosis and a liver abscess among other things (circled in black).
+This patient was admitted for ``Abdominal Pain".  The neural net predicted that they had low risk of brain and heart conditions (colored green).  It predicted high risk of liver conditions (colored red).  The patients was eventually diagnosed with chronic liver cirrhosis and a liver abscess among other things (circled in black).
 \label{fig:icu_map_liver}
 \end{figure}
