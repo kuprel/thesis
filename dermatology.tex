@@ -56,22 +56,6 @@ The taxonomy represents 2,032 individual diseases arranged in a tree structure w
 \subsection{Data Preparation}
 Blurry images and far-away images were removed from the test and validation sets, but still used in training. The dataset contains sets of images corresponding to the same lesion but from multiple viewpoints, or multiple images of similar lesions on the same person. While this is useful training data, extensive care was taken to ensure that these sets were not split between the training and validation sets. Using image EXIF metadata, repository specific information, and nearest neighbor image retrieval with CNN features, an undirected graph connecting any pair of images that were determined to be similar was created. Connected components of this graph were not allowed to straddle the train/validation split and were randomly assigned to either train or validation. The test sets all came from independent, high-quality repositories of biopsy-proven images - the Stanford Hospital, the University of Edinburgh Dermofit Image Library, and the ISIC Dermoscopic Archive. No overlap (i.e. same lesion multiple viewpoints) exists between the test sets and the training/validation data.
 
-\begin{figure}
-\includegraphics[width=\textwidth]{derm_scrape}
-\caption{Data Collection}
-\vspace{12px}
-Collecting the data involved many ad-hoc python scripts to extract the image and label.  An example of an image URL and its raw label embedded in HTML is shown here.
-\label{fig:derm_scrape}
-\end{figure}
-
-\begin{figure}
-\includegraphics[width=\textwidth]{derm_data_problems}
-\caption{Data Problems}
-\vspace{12px}
-The data had to be dealt with carefully.  Images of histology slides were filtered out.  Multiple images of the same lesion from different angles could not be split across training and validation datasets.  Giveaways such as circles and stickers could not be used for validation.
-\label{fig:derm_data_problems}
-\end{figure}
-
 \subsection{Sample Selection}
 The epidermal, melanocytic, and melanocytic-dermoscopic tests of Figure \ref{fig:derm_sens_spec}(a) used 135 (65 malignant, 70 benign), 130 (33 malignant, 97 benign), and 111 (71 malignant, 40 benign) images, respectively. Their counterparts of Figure \ref{fig:derm_sens_spec}(b) used 707 (450 malignant, 257 benign), 225 (58 malignant, 167 benign), and 1010 (88 malignant, 922 benign) images, respectively. The number of images used for Figure \ref{fig:derm_sens_spec}(b) was based on the availability of biopsy-labeled data (i.e. malignant melanocytic lesions are exceedingly rare compared to benign melanocytic lesions). These numbers are statistically justified by the standards of the ILSVRC computer vision challenge6, which has 50-100 images per class for validation and test sets. For (a), 140 images were randomly selected from each set of (b), and a non-tested dermatologist removed any images of insufficient resolution (while the network accepts 299 x 299 image inputs, humans require larger images for clarity).
 
