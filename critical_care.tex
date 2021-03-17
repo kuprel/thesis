@@ -3,13 +3,12 @@
 \section{Overview}
 Wearable devices are becoming more common.  Over 100 million people wear an Apple Watch \cite{cybart_2021}.  This device is capable of measuring both a photoplethysmogram (PPG) and an electrocardiogram (ECG).  It has been FDA approved to detect atrial fibrillation, an irregular beating of the heart \cite{perez2019large}.  Maybe these devices can be used to detect other conditions as well.  While smartwatch ECG and PPG data is not yet openly available in large quantities, there are large amounts of data available to researchers for patients in hospital intensive care units (ICU) \cite{johnson2016mimic}.  The waveforms that smartwatches measure are also measured in ICUs.
 
-The distribution of patients in an ICU is somewhat different from the distribution of smartwatch users.  Can detecting conditions with ICU data make progress toward detecting conditions in smartwatch users?  As I demonstrated \cite{kuprel2017dermatologist}, a network trained to recognize everyday objects like cats and dogs can be adapted to detect various skin conditions.  Images of everyday objects are significantly more abundant, and more easily labeled, than images of skin conditions.  Similarly, waveforms and diagnoses collected from sick patients in the ICU are significantly more abundant than waveforms and diagnoses collected from smartwatch users.  Progress can be made toward detecting medical conditions with smartwatches by first training on an abundant data source with associated diagnosis labels.  
+The distribution of patients in an ICU is somewhat different from the distribution of smartwatch users.  Can detecting conditions with ICU data make progress toward detecting conditions in smartwatch users?  As demonstrated \cite{kuprel2017dermatologist}, a network trained to recognize everyday objects like cats and dogs can be adapted to detect various skin conditions.  Images of everyday objects are significantly more abundant, and more easily labeled, than images of skin conditions.  Similarly, waveforms and diagnoses collected from sick patients in the ICU are significantly more abundant than waveforms and diagnoses collected from smartwatch users.  Progress can be made toward detecting medical conditions with smartwatches by first training on an abundant data source with associated diagnosis labels.  
 
 The specific problem of detecting conditions in ICU patients is itself important.  Admission to the ICU is associated with risk of acute mortality given critical illness for those patients, which can include shock and end organ damage. During this period, patients are closely monitored in the intensive care setting with both invasive and noninvasive sensor data and frequent lab monitoring in order to effectively determine and prevent complications of critical illness.  Physicians often use risk scores designed to identify and predict patients’ risk of conditions such as shock: general physiologic scoring like shock index, or more specifically septic shock (qSOFA score) \cite{seymour2016assessment} or cardiogenic shock, completing Fick’s formula for cardiac index, cardiac output, and stroke volume \cite{fick1870ueber}.  Can deep learning can be used to learn risk analyses from data?
 
 The approach taken is to solve the specific problem of detecting medical conditions in ICU patients with known diagnoses.  This step is important for solving the broader problem of detecting medical conditions with a smartwatch, which itself is important for solving the even broader problem of detecting life threatening medical conditions early with ubiquitous sensors.
 
-\pagebreak
 \section{Methods}
 
 \subsection{Dataset}
@@ -359,7 +358,7 @@ To compute an embedding of ICD codes from what the net has learned, 43,557 examp
 
 \subsection{Semantic Space Inference}
 
-Many ICD codes are highly similar.  For example, consider the possible codes for sepsis conditions.  There are ICD codes for Septic Shock (785.52), Severe Sepsis (995.92), and Septicemia (038), all placed in wildy different places within the taxonomy.  The common ancestor of these codes in the ICD taxonomy, maintained by the World Health Organization, is the root of the entire taxonomy.  If the net predicts code 785.52 but the actual diagnosis is 995.92, the net is penalized.  Maybe the net is generally right about its predictions, but is unreliable at picking the exact ICD code that the doctor happened to pick.  That does seem to be the case.  Specifically, the net appears to be more reliable at detecting the organ that the condition affects.  For example it seems to know if something is wrong with the heart, brain, or liver.  The net's prediction can be visualized as a heat map in a semantic space of ICD codes.  The semantic space self organizes by organ, maybe the most interesting outcome of this work.  See Figure \ref{fig:icu_icd_map}.  It's fascinating that from such simple waveforms, measuring conductivity across the heart (ECG) or optically sensing blood flow in an artery in the finger (PPG), a neural net can develop a sense of which organs are working properly and which are not.
+Many ICD codes are highly similar.  For example, consider the possible codes for sepsis conditions.  There are ICD codes for Septic Shock (785.52), Severe Sepsis (995.92), and Septicemia (038), all placed in wildy different places within the taxonomy.  The common ancestor of these codes in the ICD taxonomy, maintained by the World Health Organization, is the root of the entire taxonomy.  If the net predicts code 785.52 but the actual diagnosis is 995.92, the net is penalized.  Maybe the net is generally right about its predictions, but is unreliable at picking the exact ICD code that the doctor happened to pick.  That does seem to be the case.  Specifically, the net appears to be more reliable at detecting the organ that the condition affects.  For example it seems to know if something is wrong with the heart, brain, or liver.  The net's prediction can be visualized as a heat map in a semantic space of ICD codes.  The semantic space self organizes by organ, maybe the most interesting outcome of this work.  See Figure \ref{fig:icu_icd_map}.  It is fascinating that from such simple waveforms, measuring conductivity across the heart (ECG) or optically sensing blood flow in an artery in the finger (PPG), a neural net can develop a sense of which organs are working properly and which are not.
 
 Semantic space embeddings are common in the field of Natural Language Processing, with word2vec being perhaps the most famous \cite{mikolov2013efficient}.
 
@@ -374,7 +373,7 @@ The predictions from before can be used to embed the ICD codes into a lower dime
 
 $\mathcal{Z}$ can be shaped into a matrix $Z$ of size $d \times m |\mathcal{I}|$ where the $d$ rows of this matrix are vector representations of the $d$ ICD Codes.  The dimensionality of these vectors can be reduced from $m |\mathcal{I}|$ to 2 to visualize them.  As with the previous work in dermatology, this can be done using TSNE \cite{van2008visualizing}.
 
-The result of this embedding of ICD codes is shown in Figure \ref{fig:icu_embedding_method}. Conditions are color coded by which part of the body they affect.  Red circles are conditions that affect the heart.  These conditions include cardiogenic shock, coronary atherosclerosis, atrial flutter, systolic heart failure, and myocardial infarction.  Green circles are conditions that affect the brain.  These conditions include cerebral edema, brain cancer, cerebral aneurysm, intracerebral hemorrhage.  It’s interesting that skull fracture found its way into this region.  Yellow circles are conditions that affect the liver.  These conditions include cirrhosis, hepatitis, and liver cancer.  It is interesting that alcohol abuse and alcohol dependence syndrome found their way into this region, and are also close to the brain conditions.  Blue circles are conditions that affect the lungs.  These conditions include pulmonary collapse, pneumonia, and acute respiratory failure.  It is remarkable that a highly articulate semantic space can be learned from simple waveforms.  Further similar ICD codes are close together in this semantic space that may be far apart in the ICD taxonomy.  For example, the ICD codes 785.52: Septic Shock, 995.92: Severe Sepsis, and 038: Septicemia.  The nearest common ancestor of these ICD codes in the taxonomy is the root of the entire taxonomy of all medical conditions that exist.  But the net learned that they were similar semantically based on the waveforms it was trained with.
+The result of this embedding of ICD codes is shown in Figure \ref{fig:icu_embedding_method}. Conditions are color coded by which part of the body they affect.  Red circles are conditions that affect the heart.  These conditions include cardiogenic shock, coronary atherosclerosis, atrial flutter, systolic heart failure, and myocardial infarction.  Green circles are conditions that affect the brain.  These conditions include cerebral edema, brain cancer, cerebral aneurysm, intracerebral hemorrhage.  It is interesting that skull fracture found its way into this region.  Yellow circles are conditions that affect the liver.  These conditions include cirrhosis, hepatitis, and liver cancer.  It is interesting that alcohol abuse and alcohol dependence syndrome found their way into this region, and are also close to the brain conditions.  Blue circles are conditions that affect the lungs.  These conditions include pulmonary collapse, pneumonia, and acute respiratory failure.  It is remarkable that a highly articulate semantic space can be learned from simple waveforms.  Further similar ICD codes are close together in this semantic space that may be far apart in the ICD taxonomy.  For example, the ICD codes 785.52: Septic Shock, 995.92: Severe Sepsis, and 038: Septicemia.  The nearest common ancestor of these ICD codes in the taxonomy is the root of the entire taxonomy of all medical conditions that exist.  But the net learned that they were similar semantically based on the waveforms it was trained with.
 
 Now that this semantic space and relative risk have been computed for all the test patients, the net's predictions can be visualized on a patient by patient level.  Here the ICD codes are colored according to the risk level that patient has.  Actual diagnoses are circled in white.  See Figures \ref{fig:icu_map_chf}, \ref{fig:icu_map_brain}, \ref{fig:icu_map_liver}.
 
@@ -390,7 +389,7 @@ TSNE was applied to high dimensional ICD code embeddings to produce a 2D visuali
 \includegraphics[width=\textwidth]{icu_map_mi}
 \caption{Semantic Inference Myocardial Infarction}
 \vspace{12px}
-This patient was admitted for ``ST Elevated Myocardial Infarction".  The neural net correctly predicted that they had low risk of kidney conditions, death, and many heart conditions (colored green).  It predicted high risk of liver conditions and various heart conditions including myocardial infarction and coronary atherosclerosis (colored red).  The patients was eventually in fact diagnosed with myocardial infarction and coronary atherosclerosis among other things (circled in black).
+This patient was admitted for ``ST Elevated Myocardial Infarction".  The neural net correctly predicted that they had low risk of kidney conditions, death, and many heart conditions (colored green).  It predicted high risk of liver conditions and various heart conditions including myocardial infarction and coronary atherosclerosis (colored red).  The patient was eventually in fact diagnosed with myocardial infarction and coronary atherosclerosis among other things (circled in black).
 \label{fig:icu_map_mi}
 \end{figure}
 
@@ -398,7 +397,7 @@ This patient was admitted for ``ST Elevated Myocardial Infarction".  The neural 
 \includegraphics[width=\textwidth]{icu_map_chf}
 \caption{Semantic Inference Congestive Heart Failure}
 \vspace{12px}
-This patient was admitted for ``Congestive Heart Failure".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart, and died (circled in black).
+This patient was admitted for ``Congestive Heart Failure".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patient was eventually diagnosed of conditions affecting the heart, and died (circled in black).
 \label{fig:icu_map_chf}
 \end{figure}
 
@@ -406,7 +405,7 @@ This patient was admitted for ``Congestive Heart Failure".  The neural net predi
 \includegraphics[width=\textwidth]{icu_map_cardarr}
 \caption{Semantic Inference Cardiac Arrest}
 \vspace{12px}
-This patient was admitted for ``Cardiac Arrest".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart among other things (circled in black).
+This patient was admitted for ``Cardiac Arrest".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patient was eventually diagnosed of conditions affecting the heart among other things (circled in black).
 \label{fig:icu_map_cardarr}
 \end{figure}
 
@@ -414,7 +413,7 @@ This patient was admitted for ``Cardiac Arrest".  The neural net predicted that 
 \includegraphics[width=\textwidth]{icu_map_pacer}
 \caption{Semantic Inference Pacer Erosion}
 \vspace{12px}
-This patient was admitted for ``Pacer Erosion".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart (circled in black).
+This patient was admitted for ``Pacer Erosion".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patient was eventually diagnosed of conditions affecting the heart (circled in black).
 \label{fig:icu_map_pacer}
 \end{figure}
 
@@ -422,7 +421,7 @@ This patient was admitted for ``Pacer Erosion".  The neural net predicted that t
 \includegraphics[width=\textwidth]{icu_map_stseg}
 \caption{Semantic Inference ST Elevation}
 \vspace{12px}
-This patient was admitted for ``St-Segment Elevation Myocardial Infarction/Cardiac Cath".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart (circled in black).
+This patient was admitted for ``St-Segment Elevation Myocardial Infarction/Cardiac Cath".  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patient was eventually diagnosed of conditions affecting the heart (circled in black).
 \label{fig:icu_map_stseg}
 \end{figure}
 
@@ -430,7 +429,7 @@ This patient was admitted for ``St-Segment Elevation Myocardial Infarction/Cardi
 \includegraphics[width=\textwidth]{icu_map_ventach}
 \caption{Semantic Inference Ventricular Tachycardia}
 \vspace{12px}
-This patient was admitted for ventricular tachycardia.  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patients was eventually diagnosed of conditions affecting the heart (circled in black).
+This patient was admitted for ventricular tachycardia.  The neural net predicted that they had low risk of liver and brain conditions (colored green).  It predicted high risk of heart conditions (colored red).  The patient was eventually diagnosed of conditions affecting the heart (circled in black).
 \label{fig:icu_map_ventach}
 \end{figure}
 
@@ -438,7 +437,7 @@ This patient was admitted for ventricular tachycardia.  The neural net predicted
 \includegraphics[width=\textwidth]{icu_map_brain}
 \caption{Semantic Inference Intracranial Hemorrhage}
 \vspace{12px}
-This patient was admitted for ``Intracranial Hemorrhage".  The neural net predicted that they had low risk of heart conditions and septic conditions (colored green).  It predicted high risk of brain conditions (colored red).  The patients was eventually diagnosed with cerebral edema and intracerebral hemorrhage (circled in black).
+This patient was admitted for ``Intracranial Hemorrhage".  The neural net predicted that they had low risk of heart conditions and septic conditions (colored green).  It predicted high risk of brain conditions (colored red).  The patient was eventually diagnosed with cerebral edema and intracerebral hemorrhage (circled in black).
 \label{fig:icu_map_brain}
 \end{figure}
 
@@ -446,6 +445,6 @@ This patient was admitted for ``Intracranial Hemorrhage".  The neural net predic
 \includegraphics[width=\textwidth]{icu_map_liver}
 \caption{Semantic Inference Abdominal Pain}
 \vspace{12px}
-This patient was admitted for ``Abdominal Pain".  The neural net predicted that they had low risk of brain and heart conditions (colored green).  It predicted high risk of liver conditions (colored red).  The patients was eventually diagnosed with chronic liver cirrhosis and a liver abscess among other things (circled in black).
+This patient was admitted for ``Abdominal Pain".  The neural net predicted that they had low risk of brain and heart conditions (colored green).  It predicted high risk of liver conditions (colored red).  The patient was eventually diagnosed with chronic liver cirrhosis and a liver abscess among other things (circled in black).
 \label{fig:icu_map_liver}
 \end{figure}
