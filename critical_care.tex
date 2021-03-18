@@ -61,14 +61,12 @@ Consider a neural net $f$ that takes as input an example $x$ comprised of $k=15$
     f: \mathcal{X} \times \Theta \mapsto \mathcal{P} = [0, 1]^d \\
     p = f(x, \theta)
 \end{gather}
-
 When the net makes a prediction, it is penalized by a loss function $\ell$.  The loss function takes as input the vector of probabilities $p$ that the net predicted, along with the vector of actual ICD code diagnoses $y$.  For each ICD code $k$ the binary cross entropy is computed between the prediction $p_k$ and and label $y_k$.  The loss is then the average binary cross entropy over all $d=90$ ICD codes.
 \begin{gather}
     \ell: \mathcal{P} \times \mathcal{Y} \mapsto \mathbb{R} \\
     \ell(p, y) = -\frac{1}{d} \sum_{k=1}^d 
         y_k * \log p_k + (1 - y_k) * \log(1 - p_k)
 \end{gather}
-
 The net is trained with batches of examples of size $b = 32$.  The batch loss $L$ is the sum of individual losses $\ell$.
 \begin{align}
     L &: \mathcal{X}^b \times \mathcal{Y}^b 
@@ -81,7 +79,6 @@ The net is trained with batches of examples of size $b = 32$.  The batch loss $L
         &= -\frac{1}{d} \sum_{i=1}^b \sum_{k=1}^d 
             y_{ik} * \log p_{ik} + (1 - y_{ik}) * \log(1 - p_{ik})
 \end{align}
-
 The parameters $\theta$ are computed with stochastic gradient descent.  The batch loss $L$ is differentiable with respect to the $j$th parameter of $\theta$.
 \begin{align}
     \frac{\partial L}{\partial \theta_j} 
@@ -94,16 +91,6 @@ The parameters $\theta$ are computed with stochastic gradient descent.  The batc
             \right)
             \frac{\partial p_{ik}}{\partial \theta_j}
 \end{align}
-
-% In matrix-vector form
-
-% \begin{gather}
-%     \frac{\partial L}{\partial \theta} = 
-%         \sum_{i=1}^b 
-%         \frac{\partial p_i^\intercal}{\partial \theta} 
-%         \frac{\partial \ell}{\partial p_i}
-% \end{gather}
-
 To complete this batch loss derivative, and perform gradient descent to compute the parameters $\theta$, the net $f$ must be differentiable with respect to its parameters $\theta$.
 
 \subsection{Model Architecture}
@@ -114,14 +101,12 @@ Residual layers are used to train a deep network and avoid vanishing gradients \
 \begin{gather}
     z^{(\ell + 1)} = f(z^{(\ell)}) + z^{(\ell)}
 \end{gather}
-
 These skip connections allow data and gradients to flow unimpeded by the layers, allowing for deeper networks to be trained more aggressively.
 
 The first 4 layers of the net are 1D dilated independent convolutions with skip connections.  The remaining 8 layers are 1D dilated joint convolutions with skip connections.  Finally there is a dense layer at the end.  The biases of the final layer are initialized such that the network predicts the prior of that condition when first initialized.  That is, if the prevalence of ICD code $k$ is $\pi_k$, then the $k$th bias is set to the inverse sigmoid of $\pi_k$
 \begin{gather}
     \text{bias}_k = \log \pi_k - \log(1 - \pi_k)
 \end{gather}
-
 Predicting the prevalence minimizes the binary cross entropy if only the prevalence is known.
 
 \subsection{Partition}
@@ -140,7 +125,6 @@ This set of required waveforms was chosen because they were commonly measured in
         &= \mathcal{I}_1 \cup \mathcal{I}_2 \cup \mathcal{I}_3 \text{ where }
             \mathcal{I}_1 \cap \mathcal{I}_2 = \emptyset, \mathcal{I}_1 \cap \mathcal{I}_3 = \emptyset
 \end{align}
-
 Each fold defines a training dataset $\mathcal{D}_{train}$ and a testing dataset $\mathcal{D}_{test}$.  A patient that does not have all of the required waveforms measured for testing is still used for training with the missing waveforms represented with 0s.  The net was trained until the training loss started to plateau.  In prior experiments, this was fairly consistent with when the validation loss started to increase, i.e. the net was overfitting. The training and testing datasets are defined as
 \begin{gather}
     \mathcal{D}_{test} = \{
@@ -154,7 +138,6 @@ Each fold defines a training dataset $\mathcal{D}_{train}$ and a testing dataset
         \text{ for } j \in \{ 1, \dots, m_i \}
     \}
 \end{gather}
-
 When training and testing, each patient should carry equal weight.  Since each patient was in the hospital for different lengths of time, it is easy to bias the distribution of training and testing data toward patients who are in the hospital for longer periods of time.  To remove this bias, a simple procedure is used.  When training or testing, first randomly sample a patient, and then randomly sample a segment from their hospital stay.
 \begin{gather}
     i \sim \text{uniform}(\mathcal{I}) \\
@@ -198,7 +181,6 @@ After performing 3-fold cross validation, there is a prediction for every exampl
         \text{ for } j \in \{ 1, \dots, m \}
     \}
 \end{gather}
-
 Just before the sigmoid in the final layer, there is an unnormalized representation of the net output, $p = \text{sigmoid}(z)$ where $z \in \mathbb{R}$ and $p \in [0, 1]$.
 \begin{gather}
     \mathcal{Z} = \{
@@ -207,14 +189,12 @@ Just before the sigmoid in the final layer, there is an unnormalized representat
         \text{ for } j \in \{ 1, \dots, m \}
     \}
 \end{gather}
-
 The empirical distributions over $z$ given $y$ can be used to compute a posterior.  Let $Y_k = 1 \mid Z_k = z$ be the event that a new patient is diagnosed with ICD code $k$ given that the net outputs value $z$ for that code.  Information on the reverse situation is known.  That is, there is information on the probability of the net outputting a value $z$ given that the patient is or is not diagnosed.  The prevalences of these conditions in the hospital are also known.  Let $\pi_k$ be the prevalence of ICD code $k$ among hospital patients.  Applying Bayes Rule:
 \begin{gather}
     P(Y_k = 1 \mid Z_k = z) = \frac
         {P(Z_k = z \mid Y_k = 1) \ \pi_k}
         {P(Z_k = z \mid Y_k = 0) (1 - \pi_k) + P(Z_k = z \mid Y_k = 1) \ \pi_k}
 \end{gather}
-
 To naively estimate this posterior, one could compute 2 histograms of $Z_k \mid Y_k$, one each for $Y_k=0$ and $Y_k=1$.  That is, bin possible values of $Z_k$ and count how many times the net predicts a value within that range.  Do this for predictions when the label is negative for ICD code $k$, and again for predictions when the label is positive for ICD code $k$.  Finally one would normalize those histograms so that the total areas are 1.  If the bins are too small, the number of occurrences in a particular bin has high variance, and the empirical distribution will be far from smooth.  If the bins are too large, the empirical distribution will be very coarse.  Further, there is often very little data present for the situation when the label is positive for an ICD code.  Is there a more direct way, to avoid binning and counting?  Yes, there is Kernel Bayes Rule \cite{fukumizu2013kernel}.
 
 Kernel Bayes Rule says that given a bunch of observations $(x_i, y_i)$ for $i = 1, \dots, n$, the posterior of $y$ given $x$ can be estimated using a positive definite kernel function $K$ as follows
@@ -223,14 +203,12 @@ Kernel Bayes Rule says that given a bunch of observations $(x_i, y_i)$ for $i = 
         {\sum_{i=1}^n K(x - x_i) \ K(y - y_i)}
         {\sum_{i=1}^n K(x - x_i)}
 \end{gather}
-
 Applying Kernel Bayes Rule, the posterior can be directly estimated without discretizing and binning.
 \begin{gather}
     \hat{P}(Y_k = 1 \mid Z_k = z) = \frac
         {\sum_{i \in \mathcal{I}} y_{ik} \sum_{j=1}^m K(z - z_{ijk})}
         {\sum_{i \in \mathcal{I}} \sum_{j=1}^m K(z - z_{ijk})}
 \end{gather}
-
 A standard radial basis function (RBF) kernel was used with $\sigma = 0.8$.  For examples of these kernel densities, see Figures \ref{fig:icu_cardio}, \ref{fig:icu_systolic}, \ref{fig:icu_cerebral}, \ref{fig:icu_myocard}.
 
 When computing this posterior, it is important that no prediction should depend on its label.  Consider the following naive posterior calculation for a test patient $i$
@@ -239,26 +217,22 @@ When computing this posterior, it is important that no prediction should depend 
         {\sum_{i' \in \mathcal{I}} y_{i'k} \sum_{j'=1}^m K(z_{ijk} - z_{i'j'k})}
         {\sum_{i' \in \mathcal{I}} \sum_{j'=1}^m K(z_{ijk} - z_{i'j'k})}
 \end{gather}
-
 There are two issues here.  First, the summation over test patients $\mathcal{I}$ must not include the test patient of interest $i$, otherwise $y_{ik}$ is being used to predict the outcome $Y_{ik}$.  Second, remember that the net output is a function of its parameters, $z_{ij} = f(x_{ij}, \theta)$, and the parameters $\theta$ are a function of the training dataset $\mathcal{D}_{train}$ via gradient descent.  It follows then that to compute a posterior without using its label, the summation must be over all patients in the test set except for the patient of interest $\mathcal{I}_{test} - i$.
 \begin{gather}
     \hat{P}(Y_{ik} = 1 \mid Z_k = z_{ijk}) = \frac
         {\sum_{i' \in \mathcal{I}_{test} - i} y_{i'k} \sum_{j'=1}^m K(z_{ijk} - z_{i'j'k})}
         {\sum_{i' \in \mathcal{I}_{test} - i} \sum_{j'=1}^m K(z_{ijk} - z_{i'j'k})}
 \end{gather}
-
 The relative risk $r$ can be computed for every patient $i$ in the test set, for every example from their stay $j$, and for every ICD code $k$.
 \begin{gather}
     r_{ijk} = \frac
         {\hat{P}(Y_{ik} = 1 \mid Z_k = z_{ijk})}
         {\pi_k}
 \end{gather}
-
 Given relative risk bounds $(r_{\min}, r_{\max})$ examples can be placed into relative risk groups $\mathcal{G}_k$ for each condition $k$
 \begin{gather}
     \mathcal{G}_k(r_{\min}, r_{\max}) = \{ (i, j) \mid r_{\min} < r_{ijk} < r_{\max} \}
 \end{gather}
-
 This grouping serves to later assess the validity of the relative risk predictions across ICD codes.  The relative risks are grouped by powers of 2.  For example, for the ICD code of cardiogenic shock and relative risk group bounded by $r_{\min} = 2$, $r_{\max} = 4$ represents patients flagged to carry twice the estimated risk for experiencing a cardiogenic shock sometime during their hospital stay.  The estimated 2x risk for that group is a conservative estimate since patients in that group could carry as much as 4x the risk.  Similarly, the relative risk group bounded by $r_{\min} = 1/4$, $r_{\max} = 1/2$ represents patients flagged to carry half the estimated risk for experiencing cardiogenic shock sometime during their hospital stay.  Here, the conservative estimate of 1/2 for the low risk group corresponds to $r_{\max}$ rather than $r_{\min}$ as with the high risk group.  A grouping of all patients into risk groups for 24 conditions is shown in Figure \ref{fig:icu_relative_risk}.
 
 Are the risk groups correct?  For each risk group $g = (r_{\min}, r_{\max})$ and ICD code $k$, the actual risk $a_k(g)$ observed can be computed.  It is computed as the fraction of examples that fall within that risk group that were ultimately diagnosed with ICD code $k$, divided by the prevalence of that condition $\pi_k$.
@@ -267,13 +241,11 @@ Are the risk groups correct?  For each risk group $g = (r_{\min}, r_{\max})$ and
         \frac{\sum_{(i, j) \in \mathcal{G}_k(g)} y_{ik}}{|\mathcal{G}_k(g)|}
     \right)
 \end{gather}
-
 The means and standard deviations of actual risk for each risk group can be computed
 \begin{gather}
     \mu(g) = \frac{1}{d} \sum_{k=1}^d a_k(g) \\
     \sigma^2(g) = \frac{1}{d} \sum_{k=1}^d (a_k(g) - \mu(g))^2
 \end{gather}
-
 These are plotted in Figure \ref{fig:icu_actual_risk}.  The results show that the observed risk for each group is in fact better than the conservative estimate, for all groups.  That is, for low risk groups, the observed risk is lower and for high risk groups, the observed risk is higher.
 
 \begin{figure}
@@ -325,14 +297,12 @@ Sensitivity is calculated as follows
             {\sum_{i \in \mathcal{I}} y_{ik} \hat{y}_{ik}}
             {\sum_{i \in \mathcal{I}} y_{ik}}
 \end{gather}
-
 For simplicity, assume there is a perfect test for condition $k$.  The prediction for any patient $i$ having that condition is always correct, $y_{ik} = \hat{y}_{ik}$.  Assume that due to limited resources, only a subset of the patients $\mathcal{J}_k \subset \mathcal{I}$ can be tested with this test. The untested patients are effectively predicted to not have the condition, that is $\hat{y}_{ik} = 0$ for $i \notin \mathcal{J}_k$.  Hence we have an effective sensitivity
 \begin{gather}
     \text{sensitivity}_k = \frac
         {\sum_{i \in \mathcal{J}_k} y_{ik}}
         {\sum_{i \in \mathcal{I}} y_{ik}}
 \end{gather}
-
 The challenge is to choose the best set of patients $\mathcal{J}_k$ to test for condition $k$.  If the patients are chosen randomly, the expected effective sensitivity is simply the percent of patients tested.
 \begin{gather}
     \mathbb{E}_{\mathcal{J}_k}[\text{sensitivity}_k]
@@ -342,7 +312,6 @@ The challenge is to choose the best set of patients $\mathcal{J}_k$ to test for 
         = \frac{|\mathcal{J}_k| * \pi_k}{|\mathcal{I}| * \pi_k} 
         = \frac{|\mathcal{J}_k|}{|\mathcal{I}|} 
 \end{gather}
-
 What if patients are triaged for the expensive test with the predictions given by the net?  For many conditions it is easy to achieve 3x improvement over random testing.  See Figures \ref{fig:icu_cardio}, \ref{fig:icu_systolic}, \ref{fig:icu_cerebral}, \ref{fig:icu_myocard} for results.
 
 \pagebreak
@@ -370,7 +339,6 @@ The predictions from before can be used to embed the ICD codes into a lower dime
         \text{ for } j \in \{ 1, \dots, m \}
     \}
 \end{gather}
-
 $\mathcal{Z}$ can be shaped into a matrix $Z$ of size $d \times m |\mathcal{I}|$ where the $d$ rows of this matrix are vector representations of the $d$ ICD Codes.  The dimensionality of these vectors can be reduced from $m |\mathcal{I}|$ to 2 to visualize them.  As with the previous work in dermatology, this can be done using TSNE \cite{van2008visualizing}.
 
 The result of this embedding of ICD codes is shown in Figure \ref{fig:icu_embedding_method}. Conditions are color coded by which part of the body they affect.  Red circles are conditions that affect the heart.  These conditions include cardiogenic shock, coronary atherosclerosis, atrial flutter, systolic heart failure, and myocardial infarction.  Green circles are conditions that affect the brain.  These conditions include cerebral edema, brain cancer, cerebral aneurysm, intracerebral hemorrhage.  It is interesting that skull fracture found its way into this region.  Yellow circles are conditions that affect the liver.  These conditions include cirrhosis, hepatitis, and liver cancer.  It is interesting that alcohol abuse and alcohol dependence syndrome found their way into this region, and are also close to the brain conditions.  Blue circles are conditions that affect the lungs.  These conditions include pulmonary collapse, pneumonia, and acute respiratory failure.  It is remarkable that a highly articulate semantic space can be learned from simple waveforms.  Further similar ICD codes are close together in this semantic space that may be far apart in the ICD taxonomy.  For example, the ICD codes 785.52: Septic Shock, 995.92: Severe Sepsis, and 038: Septicemia.  The nearest common ancestor of these ICD codes in the taxonomy is the root of the entire taxonomy of all medical conditions that exist.  But the net learned that they were similar semantically based on the waveforms it was trained with.
